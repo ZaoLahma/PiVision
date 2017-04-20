@@ -37,7 +37,7 @@ class NwThread(threading.Thread):
 if __name__ == "__main__":
 	print("PiVisionGuiMain called")
 	nm = PiVisionNwM(3077)
-	nm.connect("127.0.0.1")
+	nm.connect("192.168.1.76")
 	resolution = (480, 640)
 	gui = PiVisionGui(resolution)
 	nwThread = NwThread(nm)
