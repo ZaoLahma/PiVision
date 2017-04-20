@@ -1,6 +1,7 @@
 import Tkinter
 import math
 import binascii
+import time
 
 class PiVisionGui:
 	def __init__(self, resolution):
@@ -13,7 +14,8 @@ class PiVisionGui:
 			
 	# Prints an image in raw RGB format. Slow as heckish.
 	def showImage(self, image):
-		print("PiVisionGui::showImage called")
+		startTime = time.time()
+		print("PiVisionGui::showImage called. startTime: " + str(startTime))
 		byteOffset = 0
 		byteCounter = 0
 		x = 0
@@ -21,6 +23,10 @@ class PiVisionGui:
 		R = 0
 		G = 0
 		B = 0
+		hexImage = []
+		hexRow = []
+		hexRow.append('{')
+		
 		for byte in image:
 			byteCounter += 1			
 			if 0 == byteOffset:
@@ -33,12 +39,24 @@ class PiVisionGui:
 			byteOffset += 1
 			if 3 == byteOffset:
 				byteOffset = 0
-				self.image.put(("#%02x%02x%02x" % (R, G, B)), (x, y))
+				hexRow.append("#%02x%02x%02x " % (R, G, B))
 				x += 1
 				if x == self.resolution[1]:
+					hexRow.append('}')
+					hexImage.append(''.join(hexRow))
+					hexRow = []
+					hexRow.append(' {')
 					x = 0
 					y += 1
-		print("num bytes handled: " + str(byteCounter))
+		
+		print("Finished creating hexImage in " + str(time.time() - startTime) + "s")
+		startTime = time.time()
+		
+		x = 0
+		y = 0			
+		self.image.put(''.join(hexImage), to=(0, 0, self.resolution[1], self.resolution[0]))
+
+		print("num bytes handled: " + str(byteCounter) + " in " + str(time.time() - startTime) + "s")
 
 
 	def mainLoop(self):
