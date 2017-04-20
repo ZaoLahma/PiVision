@@ -8,11 +8,11 @@ class PiVisionCam:
 		self.camera.rotation = 180
 		self.resolution = resolution
 		self.camera.resolution = self.resolution
-		self.currImage = io.BytesIO()
 		self.camera.start_preview()		
 		time.sleep(2)
 		
 	def captureImage(self):
-		self.camera.capture(self.currImage, 'rgb')
-		return self.currImage.getvalue()
+		currImage = io.BytesIO()
+		self.camera.capture(currImage, 'rgb')
+		return currImage.getvalue()
 		

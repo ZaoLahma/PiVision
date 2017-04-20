@@ -21,18 +21,19 @@ class NwThread(threading.Thread):
 	def __init__(self, nm):
 		threading.Thread.__init__(self)
 		self.nm = nm
-		self.image = ''
+		self.currImage = ''
 		
 	def run(self):
 		self.running = True
 		while True == self.running:
-			self.image = nm.receive(921600)
+			image = nm.receive(921600)
+			self.currImage = image
 	
 	def stop(self):
 		self.running = False
 		
 	def getCurrImage(self):
-		return self.image
+		return self.currImage
 
 if __name__ == "__main__":
 	print("PiVisionGuiMain called")
