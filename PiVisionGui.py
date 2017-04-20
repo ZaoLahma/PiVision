@@ -51,11 +51,7 @@ class PiVisionGui:
 		
 		print("Finished creating hexImage in " + str(time.time() - startTime) + "s")
 		startTime = time.time()
-		
-		x = 0
-		y = 0			
 		self.image.put(''.join(hexImage), to=(0, 0, self.resolution[1], self.resolution[0]))
-
 		print("num bytes handled: " + str(byteCounter) + " in " + str(time.time() - startTime) + "s")
 
 
