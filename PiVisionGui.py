@@ -14,26 +14,31 @@ class PiVisionGui:
 	# Prints an image in raw RGB format. Slow as heckish.
 	def showImage(self, image):
 		print("PiVisionGui::showImage called")
-		hexImage = "#"
 		byteOffset = 0
+		byteCounter = 0
 		x = 0
 		y = 0
-		byteCounter = 0
+		R = 0
+		G = 0
+		B = 0
 		for byte in image:
-			hexImage += "%02x" % ord(byte)
+			byteCounter += 1			
+			if 0 == byteOffset:
+				R = ord(byte)
+			elif 1 == byteOffset:
+				G = ord(byte)
+			elif 2 == byteOffset:
+				B = ord(byte)
+			
 			byteOffset += 1
-			byteCounter += 1
 			if 3 == byteOffset:
-				#print("x: " + str(x) + " y: " + str(y))
 				byteOffset = 0
-				#print(hexImage)
-				self.image.put(hexImage, (x, y))
-				hexImage = "#"
+				self.image.put(("#%02x%02x%02x" % (R, G, B)), (x, y))
 				x += 1
 				if x == self.resolution[1]:
 					x = 0
 					y += 1
-		print("byteCounter: " + str(byteCounter))
+		print("num bytes handled: " + str(byteCounter))
 
 
 	def mainLoop(self):
