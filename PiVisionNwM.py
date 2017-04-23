@@ -35,8 +35,11 @@ class PiVisionNwM(threading.Thread):
 		
 	def send(self, data):
 		for connection in self.connections:
-			connection[0].sendall(data)
-			
+			try:
+				connection[0].sendall(data)
+			except Exception as e:
+				print("Disconnecting connection due to: " + str(e))
+				self.connections.remove(connection)
 	def connect(self, address):
 		self.socket.connect((address, self.portNo))
 		
