@@ -1,5 +1,21 @@
 import Tkinter
 import time
+import threading
+
+class PiVisionGuiThread(threading.Thread):
+	def __init__(self, nwThread, gui):
+		threading.Thread.__init__(self)
+		self.nwThread = nwThread
+		self.gui = gui
+		
+	def run(self):
+		self.running = True
+		while True == self.running:
+			image = self.nwThread.getData()
+			self.gui.showImage(image)
+			
+	def stop(self):
+		self.running = False
 
 class PiVisionGui:
 	def __init__(self, resolution):

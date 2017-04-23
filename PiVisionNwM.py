@@ -1,9 +1,9 @@
 import socket
 import threading
 
-class PiVisionNwM(threading.Thread):
+class PiVisionServer(threading.Thread):
 	def __init__(self, portNo):
-		print("PiVisionNwM::__init__ called. portNo: " + str(portNo))
+		print("PiVisionServer::__init__ called. portNo: " + str(portNo))
 		threading.Thread.__init__(self)
 		self.portNo = portNo
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -26,12 +26,9 @@ class PiVisionNwM(threading.Thread):
 			else:
 				print("PiVisionNwM::waitForConnection: Connected to by " + str(address))
 				self.connections.append((connection, address))
-	
-	def __waitForConnection__(self):
-		self.start()	
 		
 	def waitForConnection(self):
-		self.__waitForConnection__()
+		self.start()
 		
 	def send(self, data):
 		for connection in self.connections:
@@ -40,8 +37,23 @@ class PiVisionNwM(threading.Thread):
 			except Exception as e:
 				print("Disconnecting connection due to: " + str(e))
 				self.connections.remove(connection)
-	def connect(self, address):
-		self.socket.connect((address, self.portNo))
+
+	def stop(self):
+		self.running = False
+		
+class PiVisionClient(threading.Thread):
+	def __init__(self):
+		print("PiVisionClient::__init__ called")
+		threading.Thread.__init__(self)
+		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.running = False
+		self.data = []
+		
+	def connect(self, address, portNo):
+		self.socket.connect((address, portNo))
+	
+	def getData(self):
+		return self.data
 		
 	def receive(self, numBytes):
 		data = ''
@@ -51,7 +63,12 @@ class PiVisionNwM(threading.Thread):
 				return None
 			data += packet
 			
-		return data
-		
+		return data	
+	
+	def run(self):
+		self.running = True
+		while True == self.running:
+			self.data = self.receive(921600)
+			
 	def stop(self):
 		self.running = False
