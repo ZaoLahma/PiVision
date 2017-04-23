@@ -1,6 +1,4 @@
 import Tkinter
-import math
-import binascii
 import time
 
 class PiVisionGui:

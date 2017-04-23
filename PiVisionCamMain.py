@@ -1,6 +1,5 @@
 from PiVisionNwM import PiVisionNwM
 from PiVisionCam import PiVisionCam
-import time
 
 if __name__ == "__main__":
 	print("PiVisionCamMain called")
