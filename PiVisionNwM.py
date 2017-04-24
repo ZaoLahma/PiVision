@@ -47,10 +47,18 @@ class PiVisionClient(threading.Thread):
 		threading.Thread.__init__(self)
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.running = False
-		self.data = []
+		self.data = None
 		
 	def connect(self, address, portNo):
-		self.socket.connect((address, portNo))
+		loopback = "127.0.0.1"
+		try:
+			self.socket = socket.create_connection((loopback, portNo), 0.2)
+		except socket.timeout:
+			self.socket.connect((address, portNo))
+		except:
+			raise
+		else:
+			print("Connection established to PiVision server")
 	
 	def getData(self):
 		return self.data
@@ -66,6 +74,7 @@ class PiVisionClient(threading.Thread):
 		return data	
 	
 	def run(self):
+		print("PiVisionClient::run called")
 		self.running = True
 		while True == self.running:
 			self.data = self.receive(921600)
