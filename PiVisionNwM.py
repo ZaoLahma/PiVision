@@ -66,11 +66,13 @@ class PiVisionClient(threading.Thread):
 	def receive(self, numBytes):
 		data = ''
 		while len(data) < numBytes:
-			packet = self.socket.recv(numBytes - len(data))
-			if not packet:
-				return None
-			data += packet
-			
+			try:
+				packet = self.socket.recv(numBytes - len(data))
+				if not packet:
+					return None
+				data += packet
+			except socket.timeout:
+				pass
 		return data	
 	
 	def run(self):
