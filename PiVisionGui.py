@@ -1,6 +1,7 @@
 import Tkinter
 import time
 import threading
+from PiVisionNwM import PiVisionClient
 
 class PiVisionGuiThread(threading.Thread):
 	def __init__(self, nwThread, gui):
@@ -12,7 +13,8 @@ class PiVisionGuiThread(threading.Thread):
 		self.running = True
 		while True == self.running:
 			image = self.nwThread.getData()
-			self.gui.showImage(image)
+			if None != image:
+				self.gui.showImage(image)
 			
 	def stop(self):
 		self.running = False
@@ -71,3 +73,16 @@ class PiVisionGui:
 
 	def mainLoop(self):
 		self.window.mainloop()
+
+if __name__ == "__main__":
+	print("PiVisionGuiMain called")
+	nm = PiVisionClient()
+	nm.connect("192.168.1.250", 3077)
+	nm.start()	
+	resolution = (480, 640)
+	gui = PiVisionGui(resolution)
+	guiThread = PiVisionGuiThread(nm, gui)
+	guiThread.start()
+	gui.mainLoop()
+	guiThread.stop()
+	nm.stop()
