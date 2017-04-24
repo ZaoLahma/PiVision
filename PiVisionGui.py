@@ -46,11 +46,11 @@ class PiVisionGui:
 		for byte in image:
 			byteCounter += 1			
 			if 0 == byteOffset:
-				R = byte
+				R = ord(byte)
 			elif 1 == byteOffset:
-				G = byte
+				G = ord(byte)
 			elif 2 == byteOffset:
-				B = byte
+				B = ord(byte)
 			
 			byteOffset += 1
 			if 3 == byteOffset:
