@@ -55,6 +55,8 @@ class PiVisionClient(threading.Thread):
 			self.socket = socket.create_connection((loopback, portNo), 0.2)
 		except socket.timeout:
 			self.socket.connect((address, portNo))
+		except socket.error:
+			self.socket.connect((address, portNo))
 		except:
 			raise
 		else:

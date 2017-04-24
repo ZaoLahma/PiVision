@@ -15,7 +15,11 @@ class PiVisionCam:
 	def captureImage(self):
 		currImage = io.BytesIO()
 		self.camera.capture(currImage, 'rgb')
-		return currImage.getvalue()
+		asciiImage = currImage.getvalue()
+		byteVals = []
+		for hexVal in asciiImage:
+			byteVals.append(ord(hexVal))
+		return byteVals
 		
 
 if __name__ == "__main__":
