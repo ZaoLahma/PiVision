@@ -36,13 +36,15 @@ class PiVisionMotion:
             if self.printed == False:
                 self.printed = True
                 imageCreator = PiVisionPpmImageCreator()
-                imageCreator.createPpmImage(image)            
+                image = imageCreator.createPpmImage(image)
+                imageFile = open("motion_detection.ppm", "w")
+                imageFile.write(image)     
         if [] != currImage:
             self.prevImage = currImage
 
 if __name__ == "__main__":
     nw = PiVisionClient()
-    nw.connect("192.168.1.200", 3077)
+    nw.connect("192.168.1.250", 3077)
     nw.start()
     motion = PiVisionMotion()
     while True:

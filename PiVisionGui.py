@@ -77,7 +77,7 @@ class PiVisionGui:
 if __name__ == "__main__":
 	print("PiVisionGuiMain called")
 	nm = PiVisionClient()
-	nm.connect("192.168.1.200", 3077)
+	nm.connect("192.168.1.250", 3077)
 	nm.start()	
 	resolution = (480, 640)
 	gui = PiVisionGui(resolution)
