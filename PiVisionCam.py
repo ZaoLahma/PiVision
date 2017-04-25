@@ -25,6 +25,6 @@ if __name__ == "__main__":
 	cam = PiVisionCam((640, 480))
 	while True:
 		image = cam.captureImage()
-		nm.send(image)
+		nm.send(bytearray(image))
 		
 	nm.stop()
