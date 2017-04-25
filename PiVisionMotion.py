@@ -12,8 +12,7 @@ class PiVisionMotion:
     def analyzeImage(self, image):
         currImage = []
         
-        if None != image:
-            startTime = time.time()            
+        if None != image:          
             pixelVal = 0
             pixelCounter = 0
             for byte in image:
@@ -43,7 +42,7 @@ class PiVisionMotion:
 
 if __name__ == "__main__":
     nw = PiVisionClient()
-    nw.connect("192.168.1.250", 3077)
+    nw.connect("192.168.1.200", 3077)
     nw.start()
     motion = PiVisionMotion()
     while True:
