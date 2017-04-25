@@ -4,26 +4,18 @@ class PiVisionPpmImageCreator():
         
 
     def createPpmImage(self, rawData):
-        ppmImageHeader = ""
-        ppmImageHeader += "P6\n"
-        ppmImageHeader += "# motion_detection.ppm\n"
-        ppmImageHeader += "640 480\n"
-        ppmImageHeader += "255\n"
-        retVal = bytearray(ppmImageHeader)
+        ppmImage = ""
+        ppmImage += "P6\n"
+        ppmImage += "# motion_detection.ppm\n"
+        ppmImage += "640 480\n"
+        ppmImage += "255\n"
+        
+        ppmImageData = []
+        
         for byte in rawData:
-            retVal.append(byte)
-        return retVal
-        
-        
-if __name__ == "__main__":
-    data = [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255]
-    imageCreator = PiVisionPpmImageCreator()
-    
-    data = imageCreator.createPpmImage(data)
-    
-    print("data: " + str(data))
-    
-    ppmImageFile = open('motion_detection_test.ppm', 'w')
-    
-    ppmImageFile.write(data)
-    ppmImageFile.close()
+            ppmImageData.append(ord(byte))
+                
+        ppmImageFile = open('motion_detection.ppm', 'w')
+        ppmImageFile.write(ppmImage)
+        ppmImageFile.write(bytearray(ppmImageData))
+        ppmImageFile.close()

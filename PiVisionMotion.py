@@ -16,7 +16,7 @@ class PiVisionMotion:
             pixelVal = 0
             pixelCounter = 0
             for byte in image:
-                pixelVal += byte
+                pixelVal += ord(byte)
                 pixelCounter += 1
                 if 3 == pixelCounter:
                     currImage.append(pixelVal)
