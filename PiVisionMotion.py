@@ -4,6 +4,7 @@ import time
 from PiVisionPpmImageCreator import PiVisionPpmImageCreator
 from PiVisionGui import PiVisionGui
 import threading
+import PiVisionConstants
 
 class PiVisionMotion(threading.Thread):
     def __init__(self, nw):
@@ -11,7 +12,7 @@ class PiVisionMotion(threading.Thread):
         print("PiVisionMotion::init called")
         self.prevImage = None
         self.printed = False
-        self.gui = PiVisionGui((480, 640))
+        self.gui = PiVisionGui(PiVisionConstants.IMAGE_RESOLUTION)
         self.nw = nw
         self.running = False
     
@@ -38,25 +39,36 @@ class PiVisionMotion(threading.Thread):
                     pixelVal = 0
                     pixelCounter = 0
         #Super simple motion detection based off pure comparison between pixels. Will be refactored.
-        motionFound = False       
+        motionFound = False     
         numDiffs = 0            
         if None != self.prevImage:
             byteIndex = 0
             for byte in currImage:
                 diff = math.fabs(byte - self.prevImage[byteIndex])
                 if diff > 50:
-                    print("Diff (" + str(diff) + ") at pixel " + str(byteIndex))
                     motionFound = True
                     numDiffs += 1
-                    diffImage.append(chr(255))
-                    diffImage.append(chr(255))
-                    diffImage.append(chr(255))
+                    diffImage.append(chr(245))
+                    diffImage.append(chr(64))
+                    diffImage.append(chr(64))
                 else:
                     diffImage.append(chr(0))
                     diffImage.append(chr(0))
                     diffImage.append(chr(0))
                 byteIndex += 1
             self.gui.showImage(diffImage)
+        if True == motionFound:
+            if False == self.printed and numDiffs > 100:
+                self.printed = True
+                imageCreator = PiVisionPpmImageCreator()
+                toPrint = imageCreator.createPpmImage(image)
+                imageFile = open('motion_detection.ppm', 'w')
+                imageFile.write(toPrint)
+                imageFile.close()
+                toPrint = imageCreator.createPpmImage(diffImage)
+                imageFile = open('motion_detection_diff.ppm', 'w')
+                imageFile.write(toPrint)
+                imageFile.close()
         if [] != currImage:
             self.prevImage = currImage
 

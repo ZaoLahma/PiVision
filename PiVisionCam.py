@@ -2,6 +2,7 @@ import picamera
 import time
 import io
 from PiVisionNwM import PiVisionServer
+import PiVisionConstants
 
 class PiVisionCam:
 	def __init__(self, resolution):
@@ -23,7 +24,7 @@ if __name__ == "__main__":
 	print("PiVisionCamMain called")
 	nm = PiVisionServer(3077)
 	nm.waitForConnection()
-	cam = PiVisionCam((640, 480))
+	cam = PiVisionCam(PiVisionConstants.IMAGE_RESOLUTION)
 	while True:
 		image = cam.captureImage()
 		nm.send(image)

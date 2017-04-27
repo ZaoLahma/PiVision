@@ -2,6 +2,7 @@ import Tkinter
 import time
 import threading
 from PiVisionNwM import PiVisionClient
+import PiVisionConstants
 
 class PiVisionGuiThread(threading.Thread):
 	def __init__(self, nwThread, gui):
@@ -23,15 +24,13 @@ class PiVisionGui:
 	def __init__(self, resolution):
 		self.resolution = resolution
 		self.window = Tkinter.Tk()
-		self.canvas = Tkinter.Canvas(self.window, width=self.resolution[1], height=self.resolution[0], bg="#000000")
+		self.canvas = Tkinter.Canvas(self.window, width=self.resolution[0], height=self.resolution[1], bg="#000000")
 		self.canvas.pack()
-		self.image = Tkinter.PhotoImage(width=self.resolution[1], height=self.resolution[0])
-		self.canvas.create_image((self.resolution[1]/2, self.resolution[0]/2), image=self.image, state="normal")
+		self.image = Tkinter.PhotoImage(width=self.resolution[0], height=self.resolution[1])
+		self.canvas.create_image((self.resolution[0]/2, self.resolution[1]/2), image=self.image, state="normal")
 			
 	# Prints an image in raw RGB format. Slow as heckish.
 	def showImage(self, image):
-		startTime = time.time()
-		print("PiVisionGui::showImage called. startTime: " + str(startTime))
 		byteOffset = 0
 		byteCounter = 0
 		x = 0
@@ -57,18 +56,14 @@ class PiVisionGui:
 				byteOffset = 0
 				hexRow.append("#%02x%02x%02x " % (R, G, B))
 				x += 1
-				if x == self.resolution[1]:
+				if x == self.resolution[0]:
 					hexRow.append('}')
 					hexImage.append(''.join(hexRow))
 					hexRow = []
 					hexRow.append(' {')
 					x = 0
 					y += 1
-		
-		print("Finished creating hexImage in " + str(time.time() - startTime) + "s")
-		startTime = time.time()
-		self.image.put(''.join(hexImage), to=(0, 0, self.resolution[1], self.resolution[0]))
-		print("num bytes handled: " + str(byteCounter) + " in " + str(time.time() - startTime) + "s")
+		self.image.put(''.join(hexImage), to=(0, 0, self.resolution[0], self.resolution[1]))
 
 
 	def mainLoop(self):
@@ -78,9 +73,8 @@ if __name__ == "__main__":
 	print("PiVisionGuiMain called")
 	nm = PiVisionClient()
 	nm.connect("192.168.1.250", 3077)
-	nm.start()	
-	resolution = (480, 640)
-	gui = PiVisionGui(resolution)
+	nm.start()
+	gui = PiVisionGui(PiVisionConstants.IMAGE_RESOLUTION)
 	guiThread = PiVisionGuiThread(nm, gui)
 	guiThread.start()
 	gui.mainLoop()

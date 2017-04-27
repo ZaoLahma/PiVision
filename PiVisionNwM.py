@@ -1,5 +1,6 @@
 import socket
 import threading
+import PiVisionConstants
 
 class PiVisionServer(threading.Thread):
 	def __init__(self, portNo):
@@ -81,7 +82,7 @@ class PiVisionClient(threading.Thread):
 		print("PiVisionClient::run called")
 		self.running = True
 		while True == self.running:
-			self.data = self.receive(921600)
+			self.data = self.receive(PiVisionConstants.IMAGE_BYTE_SIZE)
 			
 	def stop(self):
 		self.running = False
