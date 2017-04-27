@@ -15,6 +15,7 @@ class PiVisionCam:
 	def captureImage(self):
 		currImage = io.BytesIO()
 		self.camera.capture(currImage, 'rgb')
+		
 		return currImage.getvalue()
 		
 
