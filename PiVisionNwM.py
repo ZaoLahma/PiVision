@@ -43,12 +43,13 @@ class PiVisionServer(threading.Thread):
 		self.running = False
 		
 class PiVisionClient(threading.Thread):
-	def __init__(self):
+	def __init__(self, imageSize):
 		print("PiVisionClient::__init__ called")
 		threading.Thread.__init__(self)
 		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.running = False
 		self.data = None
+		self.imageSize = imageSize
 		
 	def connect(self, address, portNo):
 		loopback = "127.0.0.1"
@@ -82,7 +83,7 @@ class PiVisionClient(threading.Thread):
 		print("PiVisionClient::run called")
 		self.running = True
 		while True == self.running:
-			self.data = self.receive(PiVisionConstants.IMAGE_BYTE_SIZE)
+			self.data = self.receive(self.imageSize)
 			
 	def stop(self):
 		self.running = False

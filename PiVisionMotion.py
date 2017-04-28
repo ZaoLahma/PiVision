@@ -73,7 +73,7 @@ class PiVisionMotion(threading.Thread):
             self.prevImage = currImage
 
 if __name__ == "__main__":
-    nw = PiVisionClient()
+    nw = PiVisionClient(PiVisionConstants.IMAGE_BYTE_SIZE)
     nw.connect("192.168.1.250", 3077)
     nw.start()
     motion = PiVisionMotion(nw)

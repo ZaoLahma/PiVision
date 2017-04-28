@@ -71,7 +71,7 @@ class PiVisionGui:
 
 if __name__ == "__main__":
 	print("PiVisionGuiMain called")
-	nm = PiVisionClient()
+	nm = PiVisionClient(PiVisionConstants.IMAGE_BYTE_SIZE)
 	nm.connect("192.168.1.250", 3077)
 	nm.start()
 	gui = PiVisionGui(PiVisionConstants.IMAGE_RESOLUTION)
