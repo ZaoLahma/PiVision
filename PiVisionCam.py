@@ -22,11 +22,12 @@ class PiVisionCam:
 
 if __name__ == "__main__":
 	print("PiVisionCamMain called")
-	nm = PiVisionServer(3077)
+	nm = PiVisionServer(PiVisionConstants.COLOR_SERVICE)
 	nm.waitForConnection()
 	cam = PiVisionCam(PiVisionConstants.IMAGE_RESOLUTION)
 	while True:
 		image = cam.captureImage()
+		print("Sending full data image")
 		nm.send(image)
 		
 	nm.stop()

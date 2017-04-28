@@ -38,7 +38,7 @@ class PiVisionMotion(threading.Thread):
                     currImage.append(pixelVal)
                     pixelVal = 0
                     pixelCounter = 0
-        #Super simple motion detection based off pure comparison between pixels. Will be refactored.
+        #Super simple motion detection based on pure comparison between pixels. Will be refactored.
         motionFound = False     
         numDiffs = 0            
         if None != self.prevImage:
@@ -74,7 +74,7 @@ class PiVisionMotion(threading.Thread):
 
 if __name__ == "__main__":
     nw = PiVisionClient(PiVisionConstants.IMAGE_BYTE_SIZE)
-    nw.connect("192.168.1.250", 3077)
+    nw.connect("192.168.1.250", PiVisionConstants.COLOR_SERVICE)
     nw.start()
     motion = PiVisionMotion(nw)
     motion.start()
