@@ -1,6 +1,5 @@
 import socket
 import threading
-import PiVisionConstants
 
 class PiVisionServer(threading.Thread):
 	def __init__(self, portNo):
@@ -34,6 +33,7 @@ class PiVisionServer(threading.Thread):
 	def send(self, data):
 		for connection in self.connections:
 			try:
+				print("Sending image data")
 				connection[0].sendall(data)
 			except Exception as e:
 				print("Disconnecting connection due to: " + str(e))
@@ -54,6 +54,7 @@ class PiVisionClient(threading.Thread):
 	def connect(self, address, portNo):
 		loopback = "127.0.0.1"
 		try:
+			print("Attempting to connect to " + loopback + " " + str(portNo))
 			self.socket = socket.create_connection((loopback, portNo), 0.2)
 		except socket.timeout:
 			self.socket.connect((address, portNo))

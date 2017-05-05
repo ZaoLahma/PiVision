@@ -74,7 +74,7 @@ class PiVisionMotion(threading.Thread):
 
 if __name__ == "__main__":
     nw = PiVisionClient(PiVisionConstants.IMAGE_BYTE_SIZE)
-    nw.connect("192.168.1.250", PiVisionConstants.COLOR_SERVICE)
+    nw.connect("192.168.1.106", PiVisionConstants.COLOR_SERVICE)
     nw.start()
     motion = PiVisionMotion(nw)
     motion.start()

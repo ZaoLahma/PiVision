@@ -1,5 +1,4 @@
 import Tkinter
-import time
 import threading
 from PiVisionNwM import PiVisionClient
 import PiVisionConstants
@@ -72,7 +71,7 @@ class PiVisionGui:
 if __name__ == "__main__":
 	print("PiVisionGuiMain called")
 	nm = PiVisionClient(PiVisionConstants.IMAGE_BYTE_SIZE)
-	nm.connect("192.168.1.250", PiVisionConstants.COLOR_SERVICE)
+	nm.connect("192.168.1.106", PiVisionConstants.COLOR_SERVICE)
 	nm.start()
 	gui = PiVisionGui(PiVisionConstants.IMAGE_RESOLUTION)
 	guiThread = PiVisionGuiThread(nm, gui)

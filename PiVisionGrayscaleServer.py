@@ -8,13 +8,14 @@ class PiVisionGrayscaleServer(threading.Thread):
 		print("PiVisionGrayscaleServer::init called")
 		threading.Thread.__init__(self)
 		self.nm = PiVisionClient(PiVisionConstants.IMAGE_BYTE_SIZE)
-		self.nm.connect("192.168.1.250", PiVisionConstants.COLOR_SERVICE)
+		self.nm.connect("192.168.1.106", PiVisionConstants.COLOR_SERVICE)
 		self.nm.start()
 		self.running = False
 	
 	def run(self):
 		self.running = True
 		self.server = PiVisionServer(PiVisionConstants.GRAYSCALE_SERVICE)
+		self.server.start()
 		while True == self.running:
 			image = self.nm.getData()
 			if None != image:
@@ -29,7 +30,7 @@ class PiVisionGrayscaleServer(threading.Thread):
 						byteCounter = 0
 						grayScaleImage.append(pixelVal/3)
 						pixelVal = 0
-				self.server.send(grayScaleImage)
+				self.server.send(bytearray(grayScaleImage))
 			
 			
 if "__main__" == __name__:
