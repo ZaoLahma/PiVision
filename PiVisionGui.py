@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import Tkinter
 import threading
 from PiVisionNwM import PiVisionClient

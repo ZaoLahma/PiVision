@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 from PiVisionNwM import PiVisionClient
 from PiVisionNwM import PiVisionServer
 import PiVisionConstants

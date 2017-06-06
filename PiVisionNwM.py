@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import socket
 import threading
 
@@ -33,7 +35,6 @@ class PiVisionServer(threading.Thread):
 	def send(self, data):
 		for connection in self.connections:
 			try:
-				print("Sending image data")
 				connection[0].sendall(data)
 			except Exception as e:
 				print("Disconnecting connection due to: " + str(e))

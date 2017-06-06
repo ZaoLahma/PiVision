@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import picamera
 import time
 import io
@@ -27,7 +29,6 @@ if __name__ == "__main__":
 	cam = PiVisionCam(PiVisionConstants.IMAGE_RESOLUTION)
 	while True:
 		image = cam.captureImage()
-		print("Sending full data image")
 		nm.send(image)
 		
 	nm.stop()

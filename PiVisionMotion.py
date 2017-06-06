@@ -1,6 +1,7 @@
+#!/usr/bin/python
+
 from PiVisionNwM import PiVisionClient
 import math
-import time
 from PiVisionPpmImageCreator import PiVisionPpmImageCreator
 from PiVisionGui import PiVisionGui
 import threading
