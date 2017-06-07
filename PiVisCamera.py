@@ -1,10 +1,21 @@
 #!/usr/bin/python
 
+import picamera
+import time
+import io
+
 class PiVisCamera:
-    def __init__(self, scheduler, server):
+    def __init__(self, scheduler, server, resolution):
         self.server = server        
-        scheduler.registerRunnable(self.run)
+        self.camera = picamera.PiCamera()
+        self.camera.rotation = 180
+        self.resolution = resolution
+        self.camera.resolution = self.resolution
+        self.camera.start_preview()        
+        time.sleep(2)
+        scheduler.registerRunnable(self.run) 
 
     def run(self):
-        data = [127, 0, 0, 1]
-        self.server.send(bytearray(data))
+        currImage = io.BytesIO()
+        self.camera.capture(currImage, 'rgb')
+        self.server.send(bytearray(currImage.getvalue()))
