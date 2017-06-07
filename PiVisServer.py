@@ -3,6 +3,13 @@
 import socket
 import PiVisConstants
 
+def getOwnIp():
+	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	s.connect(('5.255.255.255', 1))
+	IP = s.getsockname()[0]
+	s.close()
+	return IP
+
 class PiVisServer:
     def __init__(self, scheduler, portNo):
         self.portNo = portNo
@@ -12,8 +19,9 @@ class PiVisServer:
         self.serverSocket.bind(('', self.portNo)) 
         self.serviceListenerSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.serviceListenerSocket.bind(('224.1.1.1', PiVisConstants.DISCOVER_SERVICE))
-        self.host = socket.gethostbyname(socket.gethostname())
-        self.serviceListenerSocket.setsockopt(socket.SOL_IP, socket.IP_MULTICAST_IF, socket.inet_aton(self.host))
+        self.host = getOwnIp()
+        self.serviceListenerSocket.setsockopt(socket.SOL_IP, socket.IP_MULTICAST_IF, 
+											  socket.inet_aton(self.host))
         self.serviceListenerSocket.setsockopt(socket.SOL_IP, 
                                               socket.IP_ADD_MEMBERSHIP, 
                                               socket.inet_aton('224.1.1.1') + 
