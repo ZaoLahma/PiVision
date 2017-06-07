@@ -13,21 +13,23 @@ def getOwnIp():
 class PiVisServer:
     def __init__(self, scheduler, portNo):
         self.portNo = portNo
+        self.host = getOwnIp()
         self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connections = []
         self.serverSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.serverSocket.bind(('', self.portNo)) 
+        self.__setUpServiceListener__()
+        scheduler.registerRunnable(self.run)
+    
+    def __setUpServiceListener__(self):
         self.serviceListenerSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.serviceListenerSocket.bind(('224.1.1.1', PiVisConstants.DISCOVER_SERVICE))
-        self.host = getOwnIp()
         self.serviceListenerSocket.setsockopt(socket.SOL_IP, socket.IP_MULTICAST_IF, 
 											  socket.inet_aton(self.host))
         self.serviceListenerSocket.setsockopt(socket.SOL_IP, 
                                               socket.IP_ADD_MEMBERSHIP, 
                                               socket.inet_aton('224.1.1.1') + 
-                                              socket.inet_aton(self.host))
-        scheduler.registerRunnable(self.run)
-        
+                                              socket.inet_aton(self.host))  
     def __handleNewConnections__(self):
         try:
             self.serverSocket.settimeout(0.001)
@@ -56,6 +58,9 @@ class PiVisServer:
             response.extend(map(ord, self.host))
             responseSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             responseSocket.sendto(response, request[1])
+            responseSocket.close()
+            self.serviceListenerSocket.close()
+            self.__setUpServiceListener__()
 
     def run(self):
         self.__handleNewConnections__()
