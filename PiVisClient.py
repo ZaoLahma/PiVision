@@ -1,0 +1,67 @@
+#!/usr/bin/python
+
+import socket
+import PiVisConstants
+
+class PiVisClient:
+    def __init__(self, scheduler, address, portNo, imageSize):
+        self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)     
+        self.serviceDiscoverySocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+        self.serviceDiscoverySocket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+        self.stateIndex = 0
+        self.states = [self.findService, self.connect, self.connected]
+        self.piVisServerAddress = ""
+        self.portNo = portNo
+        self.imageSize = imageSize
+        self.data = []
+        self.receiveBuf = []
+        scheduler.registerRunnable(self.run)
+    
+    def findService(self):
+        data = bytearray()
+        data.extend(map(ord, PiVisConstants.SERVICE_DISCOVER_REQUEST_HEADER))
+        self.serviceDiscoverySocket.sendto(data,  ("224.1.1.1", 3069))
+        self.serviceDiscoverySocket.settimeout(0.001)
+        try:
+            data = self.serviceDiscoverySocket.recv(13)
+        except socket.timeout:
+            pass
+        except:
+            raise
+        else:
+            self.piVisServerAddress = str(data, 'utf-8')
+            print("PiVisServer service found at " + str(self.piVisServerAddress))
+            self.stateIndex += 1
+    
+    def connect(self):
+        try:
+            print("Attempting to connect to " + self.piVisServerAddress + " " + str(self.portNo))
+            self.serverSocket.connect((self.piVisServerAddress, self.portNo))
+        except:
+            raise
+        else:
+            print("Connection established to PiVision server")
+            self.stateIndex = self.stateIndex + 1
+            
+    def connected(self):
+        self.receive(self.imageSize)
+        
+    def getData(self):
+        retVal = self.data
+        return retVal
+        
+    def receive(self, numBytes):
+        while len(self.receiveBuf) < numBytes:
+            try:
+                packet = self.serverSocket.recv(numBytes - len(self.receiveBuf))
+                if not packet:
+                    break
+                self.receiveBuf += packet
+            except socket.timeout:
+                pass  
+        
+        self.data = self.receiveBuf
+        self.receiveBuf = []  
+    
+    def run(self):
+        self.states[self.stateIndex]()
