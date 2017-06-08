@@ -12,7 +12,12 @@ def getOwnIp():
 
 class PiVisServer:
     def __init__(self, scheduler, portNo):
+        self.serviceNo = -1
         self.portNo = portNo
+        if self.portNo == PiVisConstants.COLOR_SERVICE:
+            self.serviceNo = PiVisConstants.DISCOVER_COLOR_SERVICE
+        elif self.portNo == PiVisConstants.GRAYSCALE_SERVICE:
+            self.serviceNo = PiVisConstants.DISCOVER_GRAY_SERVICE
         self.host = getOwnIp()
         self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connections = []
@@ -23,8 +28,7 @@ class PiVisServer:
     
     def __setUpServiceListener__(self):
         self.serviceListenerSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.serviceListenerSocket.bind(('224.1.1.1', PiVisConstants.DISCOVER_SERVICE))
-        self.serviceListenerSocket.setsockopt(socket.SOL_IP, socket.SO_REUSEADDR, 1)
+        self.serviceListenerSocket.bind(('224.1.1.1', self.serviceNo))
         self.serviceListenerSocket.setsockopt(socket.SOL_IP, socket.IP_MULTICAST_IF, 
 											  socket.inet_aton(self.host))
         self.serviceListenerSocket.setsockopt(socket.SOL_IP, 
