@@ -34,15 +34,33 @@ class PiVisGui:
         scheduler.registerRunnable(self.run)
         
     def run(self):
-        print("PiVisGui runnable called")
         image = self.client.getData()
         if "color" == mode:
             self.showImage(image)
         elif "gray" == mode:
-            print("Not supported yet")
+            self.showGrayScaleImage(image)
         
     def onClose(self):
         self.window.destroy()
+    
+    def showGrayScaleImage(self, image):
+        x = 0
+        y = 0
+        hexImage = []
+        hexRow = []
+        hexRow.append('{')
+        
+        for byte in image:
+            hexRow.append("#%02x%02x%02x " % (byte, byte, byte))
+            x += 1
+            if x == self.resolution[0]:
+                hexRow.append('}')
+                hexImage.append(''.join(hexRow))
+                hexRow = []
+                hexRow.append(' {')
+                x = 0
+                y += 1
+        self.image.put(''.join(hexImage), to=(0, 0, self.resolution[0], self.resolution[1]))    
         
     def showImage(self, image):
         byteOffset = 0

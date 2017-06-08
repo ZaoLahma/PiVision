@@ -9,22 +9,21 @@ class PiVisGrayScaleServer:
     def __init__(self, scheduler, client, server):
         self.client = client
         self.server = server
-        scheduler.register(self.run)
+        scheduler.registerRunnable(self.run)
         
     def run(self):
-        print("PiVisGrayScaleServer run called")
         image = client.getData()
         pixelOffset = 0
         byteVal = 0
-        grayScaleImage = []
+        grayScaleImage = bytearray()
         for byte in image:
             byteVal += byte
             pixelOffset += 1
             if pixelOffset == 3:
                 byteVal = byteVal / 3
-                grayScaleImage.appen(byteVal)
+                grayScaleImage.append(int(byteVal))
                 pixelOffset = 0
-                byteVal = 0              
+                byteVal = 0           
         server.send(grayScaleImage)
                 
         
@@ -34,6 +33,7 @@ if __name__ == "__main__":
     client = PiVisClient(scheduler, 
                          PiVisConstants.COLOR_SERVICE, 
                          PiVisConstants.IMAGE_BYTE_SIZE)
-    server = PiVisServer(scheduler, PiVisConstants.GRAYSCALE_SERVICE)   
+    server = PiVisServer(scheduler, PiVisConstants.GRAYSCALE_SERVICE)
+    grayScaleServer = PiVisGrayScaleServer(scheduler, client, server)
     
     scheduler.run()
