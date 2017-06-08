@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 from PiVisScheduler import PiVisScheduler
-from PiVisCamera import PiVisCamera
 from PiVisServer import PiVisServer
 import PiVisConstants
 import picamera
