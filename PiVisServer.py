@@ -24,6 +24,7 @@ class PiVisServer:
     def __setUpServiceListener__(self):
         self.serviceListenerSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.serviceListenerSocket.bind(('224.1.1.1', PiVisConstants.DISCOVER_SERVICE))
+        self.serviceListenerSocket.setsockopt(socket.SOL_IP, socket.SO_REUSEADDR, 1)
         self.serviceListenerSocket.setsockopt(socket.SOL_IP, socket.IP_MULTICAST_IF, 
 											  socket.inet_aton(self.host))
         self.serviceListenerSocket.setsockopt(socket.SOL_IP, 
@@ -63,9 +64,9 @@ class PiVisServer:
                     responseSocket.sendto(response, request[1])
                     responseSocket.close()
                 else:
-                	print("Discarded request. Wrong service")
+                    print("Discarded request. Wrong service")
             else:
-            	print("Discared request. Wrong header")   
+                print("Discared request. Wrong header")   
             self.serviceListenerSocket.close()
             self.__setUpServiceListener__()
 
