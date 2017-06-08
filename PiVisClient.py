@@ -4,7 +4,7 @@ import socket
 import PiVisConstants
 
 class PiVisClient:
-    def __init__(self, scheduler, address, portNo, imageSize):
+    def __init__(self, scheduler, portNo, imageSize):
         self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)     
         self.serviceDiscoverySocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         self.serviceDiscoverySocket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
@@ -21,7 +21,7 @@ class PiVisClient:
         data = bytearray()
         data.extend(map(ord, PiVisConstants.SERVICE_DISCOVER_REQUEST_HEADER))
         self.serviceDiscoverySocket.sendto(data,  ("224.1.1.1", 3069))
-        self.serviceDiscoverySocket.settimeout(0.001)
+        self.serviceDiscoverySocket.settimeout(1)
         try:
             data = self.serviceDiscoverySocket.recv(13)
         except socket.timeout:
@@ -29,6 +29,7 @@ class PiVisClient:
         except:
             raise
         else:
+            self.serviceDiscoverySocket.close()
             self.piVisServerAddress = str(data, 'utf-8')
             print("PiVisServer service found at " + str(self.piVisServerAddress))
             self.stateIndex += 1

@@ -13,4 +13,8 @@ class PiVisScheduler:
         self.running = True
         while True == self.running:
             for runnable in self.runnables:
+                print("Scheduler executing " + str(runnable))
                 runnable()
+
+    def stop(self):
+        self.running = False
