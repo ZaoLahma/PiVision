@@ -19,7 +19,7 @@ class PiVisClient:
     
     def findService(self):
         data = bytearray()
-        data.extend(map(ord, PiVisConstants.SERVICE_DISCOVER_REQUEST_HEADER))
+        data.extend(map(ord, PiVisConstants.SERVICE_DISCOVER_REQUEST_HEADER + str(self.portNo)))
         self.serviceDiscoverySocket.sendto(data,  ("224.1.1.1", 3069))
         self.serviceDiscoverySocket.settimeout(1)
         try:

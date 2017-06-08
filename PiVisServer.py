@@ -44,21 +44,28 @@ class PiVisServer:
             self.connections.append((connection, address))
     
     def __handleServiceDiscoveryRequests__(self):
-        PiVisConstants.SERVICE_DISCOVER_REQUEST_HEADER
         self.serviceListenerSocket.settimeout(0.001)
         try:
-            request = self.serviceListenerSocket.recvfrom(len(PiVisConstants.SERVICE_DISCOVER_REQUEST_HEADER))
+            request = self.serviceListenerSocket.recvfrom(4096)
         except socket.timeout:
             pass
         except:
             raise
         else:
-            print("PiVisServer::__handleServiceDiscoveryRequests__: New service request received from " + str(request[1]))
-            response = bytearray()
-            response.extend(map(ord, self.host))
-            responseSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            responseSocket.sendto(response, request[1])
-            responseSocket.close()
+            print("PiVisServer::__handleServiceDiscoveryRequests__: New service request for " + str(request[0]) + " received from " + str(request[1]))
+            reqString = str(request[0], 'utf-8')
+            if reqString.startswith(PiVisConstants.SERVICE_DISCOVER_REQUEST_HEADER):
+                splitReqString = str.split(reqString, '_')
+                if int(splitReqString[2]) == self.portNo:
+                    response = bytearray()
+                    response.extend(map(ord, self.host))
+                    responseSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                    responseSocket.sendto(response, request[1])
+                    responseSocket.close()
+                else:
+                	print("Discarded request. Wrong service")
+            else:
+            	print("Discared request. Wrong header")   
             self.serviceListenerSocket.close()
             self.__setUpServiceListener__()
 
