@@ -16,6 +16,7 @@
 #define DISCOVER_COLOR_SERVICE (3069)
 #define DISCOVER_COLOR_SERVICE_MESSAGE "WHERE_IS_3070"
 #define MULTICAST_GROUP "224.1.1.1"
+#define IP_ADDRESS_LENGTH (30)
 
 typedef void (*StateFunc)(void);
 typedef struct CLIENT_state
@@ -26,6 +27,8 @@ typedef struct CLIENT_state
 
 static int connect_to_server(char* address, char* portNo);
 static int socket_receive(int fileDesc, void* data, int max_size);
+static char serverAddress[IP_ADDRESS_LENGTH];
+
 static void serviceDiscovery(void);
 static void stateDisconnected(void);
 static void stateConnecting(void);
@@ -68,19 +71,29 @@ static void serviceDiscovery(void)
 	char message[] = DISCOVER_COLOR_SERVICE_MESSAGE;
 
 	int numBytesSent = sendto(serviceDiscoverySocket, message, sizeof(message), 0, (struct sockaddr*)&addr, sizeof(addr));
-
 	if(numBytesSent < 0)
 	{
  	    perror("sendto");
 	    exit(1);
 	}
 
-	usleep(1000000);
+	int bytesReceived = recv(serviceDiscoverySocket, serverAddress, sizeof(serverAddress), 0);
+
+	if(bytesReceived > 0)
+	{
+		serverAddress[bytesReceived] = '\0';
+		(void) printf("Received: %s\n", serverAddress);
+		currState += 1u;
+	}
+	else
+	{
+		usleep(1000000);
+	}
 }
 
 static void stateConnecting(void)
 {
-	if(-1 != (socketFd = connect_to_server("192.168.1.106", "3070")))
+	if(-1 != (socketFd = connect_to_server(serverAddress, "3070")))
 	{
 		currState += 1u;
 	}
@@ -138,7 +151,7 @@ static int connect_to_server(char* address, char* portNo)
 
     for(p = servinfo; p != 0; p = p->ai_next)
     {
-    	(void) printf("Finding suitablt servinfo\n");
+    	(void) printf("Finding suitable servinfo\n");
         if ((sockfd = socket(p->ai_family, p->ai_socktype,
                              p->ai_protocol)) == -1)
         {
@@ -149,10 +162,6 @@ static int connect_to_server(char* address, char* portNo)
         {
             close(sockfd);
             continue;
-        }
-        else
-        {
-        	(void) printf("Connect failed\n");
         }
 
         break;
@@ -185,6 +194,13 @@ void CLIENT_init(void)
 {
 	serviceDiscoverySocket = socket(AF_INET, SOCK_DGRAM, 0);
 
+	struct timeval tv;
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
+	setsockopt(serviceDiscoverySocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
+
+	memset(serverAddress, 0, IP_ADDRESS_LENGTH);
+
 	funcEntry.run = run;
 	funcEntry.next = 0;
 
@@ -194,7 +210,7 @@ void CLIENT_init(void)
 int CLIENT_receive(char* buf, unsigned int bufSize)
 {
 	int retVal = -1;
-	if(3u == currState)
+	if(4u == currState)
 	{
 		(void) memcpy(buf, &buffer[bufferIndex], bufSize);
 		retVal = bufSize;
