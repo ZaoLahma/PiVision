@@ -10,8 +10,12 @@
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
+#include <stdlib.h>
 
 #define COLOR_IMAGE_SIZE (640 * 480 * 3)
+#define DISCOVER_COLOR_SERVICE (3069)
+#define DISCOVER_COLOR_SERVICE_MESSAGE "WHERE_IS_3070"
+#define MULTICAST_GROUP "224.1.1.1"
 
 typedef void (*StateFunc)(void);
 typedef struct CLIENT_state
@@ -22,6 +26,7 @@ typedef struct CLIENT_state
 
 static int connect_to_server(char* address, char* portNo);
 static int socket_receive(int fileDesc, void* data, int max_size);
+static void serviceDiscovery(void);
 static void stateDisconnected(void);
 static void stateConnecting(void);
 static void stateConnected(void);
@@ -31,11 +36,13 @@ static void run(void);
 static unsigned int currState;
 
 static int socketFd = -1;
+static int serviceDiscoverySocket = -1;
 static char buffer[(COLOR_IMAGE_SIZE)];
 static unsigned int bufferIndex = 0;
 
 static CLIENT_state state[] =
 {
+		{ "SERVICE_DISCOVERY", serviceDiscovery },
 		{ "DISCONNECTED", stateDisconnected },
 		{ "CONNECTING", stateConnecting },
 		{ "CONNECTED", stateConnected },
@@ -47,6 +54,28 @@ static SchdRunFuncEntry funcEntry;
 static void stateDisconnected(void)
 {
 	currState += 1u;
+}
+
+static void serviceDiscovery(void)
+{
+    struct sockaddr_in addr;
+
+    memset(&addr,0,sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = inet_addr(MULTICAST_GROUP);
+    addr.sin_port = htons(DISCOVER_COLOR_SERVICE);
+
+	char message[] = DISCOVER_COLOR_SERVICE_MESSAGE;
+
+	int numBytesSent = sendto(serviceDiscoverySocket, message, sizeof(message), 0, (struct sockaddr*)&addr, sizeof(addr));
+
+	if(numBytesSent < 0)
+	{
+ 	    perror("sendto");
+	    exit(1);
+	}
+
+	usleep(1000000);
 }
 
 static void stateConnecting(void)
@@ -154,6 +183,8 @@ static void run(void)
 
 void CLIENT_init(void)
 {
+	serviceDiscoverySocket = socket(AF_INET, SOCK_DGRAM, 0);
+
 	funcEntry.run = run;
 	funcEntry.next = 0;
 

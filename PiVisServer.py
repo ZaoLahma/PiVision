@@ -61,7 +61,10 @@ class PiVisServer:
             reqString = str(request[0], 'utf-8')
             if reqString.startswith(PiVisConstants.SERVICE_DISCOVER_REQUEST_HEADER):
                 splitReqString = str.split(reqString, '_')
-                if int(splitReqString[2]) == self.portNo:
+                requestedPortNo = splitReqString[2]
+                if requestedPortNo.endswith("\\x00"):
+                    requestedPortNo = requestedPortNo[:-4]
+                if int(requestedPortNo) == self.portNo:
                     response = bytearray()
                     response.extend(map(ord, self.host))
                     responseSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
