@@ -62,8 +62,8 @@ class PiVisServer:
             if reqString.startswith(PiVisConstants.SERVICE_DISCOVER_REQUEST_HEADER):
                 splitReqString = str.split(reqString, '_')
                 requestedPortNo = splitReqString[2]
-                if requestedPortNo.endswith("\\x00"):
-                    requestedPortNo = requestedPortNo[:-4]
+                if requestedPortNo.endswith("\x00"):
+                    requestedPortNo = requestedPortNo[:-1]
                 if int(requestedPortNo) == self.portNo:
                     response = bytearray()
                     response.extend(map(ord, self.host))
