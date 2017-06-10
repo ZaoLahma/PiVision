@@ -1,6 +1,7 @@
 #include "../inc/PiVisImageDiffer.h"
 #include "../inc/PiVisClient.h"
 #include "../inc/PiVisScheduler.h"
+#include "../inc/PiVisServer.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -67,6 +68,8 @@ void IMAGEDIFF_init(void)
 {
 	funcEntry.run = run;
 	funcEntry.next = 0;
+
+	SERVER_publishService(3071);
 
 	SCHED_registerCallback(&funcEntry);
 }

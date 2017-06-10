@@ -12,5 +12,6 @@ typedef struct SchdRunFuncEntry
 void SCHED_init(void);
 void SCHED_run(void);
 int SCHED_registerCallback(SchdRunFuncEntry* schdRunFuncEntry);
+void SERVER_publishService(unsigned int portNo);
 
 #endif

@@ -7,12 +7,16 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <sys/time.h>
+#include <string.h>
+#include <stdlib.h>
 
 #define IP_ADDRESS_LENGTH INET_ADDRSTRLEN
 #define INVALID_32_BIT_INT 0xFFFFFFFF
+#define COLOR_PORT_NO (3070)
+#define GRAY_PORT_NO (3071)
 #define DISCOVER_COLOR_SERVICE (3069)
 #define DISCOVER_COLOR_SERVICE_MESSAGE "WHERE_IS_3070"
-#define DISCOVER_GRAY_SERVICE (3069)
+#define DISCOVER_GRAY_SERVICE (3068)
 #define DISCOVER_GRAY_SERVICE_MESSAGE "WHERE_IS_3071"
 #define MULTICAST_GROUP "224.1.1.1"
 
@@ -24,7 +28,7 @@ static int serviceDiscoverySocket;
 static struct sockaddr_in addr;
 
 static void getOwnIpAddress(char* address);
-static void initiateSocket(void);
+static void initiateServiceDiscoverySocket(void);
 
 static void run(void);
 static void handleNewConnections(void);
@@ -62,10 +66,22 @@ static void getOwnIpAddress(char* address)
 	freeifaddrs(addrs);
 }
 
-static void initiateSocket(void)
+static void initiateServiceDiscoverySocket(void)
 {
+	unsigned int toServe = INVALID_32_BIT_INT;
+
+	if(servedPortNo == COLOR_PORT_NO)
+	{
+		toServe = DISCOVER_COLOR_SERVICE;
+	}
+	else if(servedPortNo == GRAY_PORT_NO)
+	{
+		toServe = DISCOVER_GRAY_SERVICE;
+	}
+
+	printf("toServe: %u\n", toServe);
+
     int nbytes;
-	int addrlen;
     struct ip_mreq mreq;
 	serviceDiscoverySocket = socket(AF_INET, SOCK_DGRAM, 0);
 	unsigned int yes = 1;
@@ -78,7 +94,7 @@ static void initiateSocket(void)
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    addr.sin_port = htons(DISCOVER_COLOR_SERVICE);
+    addr.sin_port = htons(toServe);
 
     if(0 > bind(serviceDiscoverySocket, (struct sockaddr*)&addr, sizeof(addr)))
     {
@@ -112,10 +128,31 @@ static void handleNewServiceDiscoveryRequests()
 								 messageBuf,
 								 sizeof(messageBuf),
 								 0,
-								 (struct sockaddr *) &addr,
+								 (struct sockaddr *)&addr,
 								 &addrLen);
 
 	printf("messageBuf: %s\n", messageBuf);
+
+	messageBuf[bytesReceived] = '\0';
+
+	char header[] = "WHERE_IS_";
+
+	if((unsigned int)bytesReceived > strlen(header))
+	{
+		char* portNoStr = &messageBuf[strlen(header)];
+		unsigned int portNo = atoi(portNoStr);
+
+		if(servedPortNo == portNo)
+		{
+			printf("Service provided. Responding to: %s\n", inet_ntoa(addr.sin_addr));
+			sendto(serviceDiscoverySocket, ownIpAddress, IP_ADDRESS_LENGTH, 0, (struct sockaddr*)&addr, sizeof(addr));
+		}
+		else
+		{
+			printf("Service not provided\n");
+		}
+	}
+
 }
 
 void SERVER_init()
@@ -127,14 +164,14 @@ void SERVER_init()
 
 	servedPortNo = (INVALID_32_BIT_INT);
 
-	initiateSocket();
-
 	SCHED_registerCallback(&funcEntry);
 }
 
-SERVER_setServedPortNo(unsigned int portNo)
+void SERVER_publishService(unsigned int portNo)
 {
 	servedPortNo = portNo;
+
+	initiateServiceDiscoverySocket();
 }
 
 void SERVER_send(char* buf, unsigned int size)

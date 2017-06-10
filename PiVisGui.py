@@ -22,6 +22,7 @@ class PiVisGuiSchedThread(threading.Thread):
 
 class PiVisGui:
     def __init__(self, scheduler, client, mode):
+        self.scheduler = scheduler
         self.mode = mode
         self.client = client
         self.resolution = PiVisConstants.IMAGE_RESOLUTION
@@ -41,6 +42,7 @@ class PiVisGui:
             self.showGrayScaleImage(image)
         
     def onClose(self):
+        self.scheduler.stop()
         self.window.destroy()
     
     def showGrayScaleImage(self, image):
