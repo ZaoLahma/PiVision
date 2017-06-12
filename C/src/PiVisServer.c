@@ -9,6 +9,7 @@
 #include <sys/time.h>
 #include <string.h>
 #include <stdlib.h>
+#include <netdb.h>
 
 #define IP_ADDRESS_LENGTH INET_ADDRSTRLEN
 #define INVALID_32_BIT_INT 0xFFFFFFFF
@@ -25,10 +26,12 @@ static char ownIpAddress[IP_ADDRESS_LENGTH];
 static unsigned int servedPortNo;
 static int serverSocket;
 static int serviceDiscoverySocket;
+static int clientSocket;
 static struct sockaddr_in addr;
 
 static void getOwnIpAddress(char* address);
 static void initiateServiceDiscoverySocket(void);
+static void initiateServerSocketFd();
 
 static void run(void);
 static void handleNewConnections(void);
@@ -64,6 +67,76 @@ static void getOwnIpAddress(char* address)
 	(void) printf("Serving address %s\n", address);
 
 	freeifaddrs(addrs);
+}
+
+static void initiateServerSocketFd()
+{
+    struct addrinfo hints;
+    struct addrinfo* servinfo;
+    struct addrinfo* p;
+    int yes = 1;
+    int rv;
+
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+
+    char portNoStr[6] = "";
+
+    sprintf(portNoStr, "%d", servedPortNo);
+
+    if ((rv = getaddrinfo(0, portNoStr, &hints, &servinfo)) != 0)
+    {
+    	printf("portNo: %u\n", servedPortNo);
+    	perror("getaddrinfo \n");
+    	exit(1);
+    }
+
+
+    for(p = servinfo; p != 0; p = p->ai_next)
+    {
+        if ((serverSocket = socket(p->ai_family, p->ai_socktype,
+                             p->ai_protocol)) == -1)
+        {
+            continue;
+        }
+
+        if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &yes,
+                       sizeof(int)) == -1)
+        {
+        	perror("reuseaddr\n");
+            exit(1);
+        }
+
+        if (bind(serverSocket, p->ai_addr, p->ai_addrlen) == -1)
+        {
+            close(serverSocket);
+            continue;
+        }
+
+        break;
+    }
+
+    freeaddrinfo(servinfo);
+
+    if (p == 0)
+    {
+    	perror("p == 0\n");
+        exit(1);
+    }
+
+    if (listen(serverSocket, 10) == -1)
+    {
+    	perror("listen\n");
+        exit(1);
+    }
+
+	struct timeval timeout;
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 1000;
+
+	setsockopt(serverSocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
 }
 
 static void initiateServiceDiscoverySocket(void)
@@ -118,6 +191,32 @@ static void run()
 {
 	(void) printf("Server run called\n");
 	handleNewServiceDiscoveryRequests();
+	handleNewConnections();
+}
+
+static void handleNewConnections()
+{
+    struct timeval tv;
+    fd_set acceptFds;
+
+    tv.tv_sec = 0;
+    tv.tv_usec = 100000;
+
+    struct sockaddr_storage their_addr;
+    socklen_t sin_size;
+
+    sin_size = sizeof their_addr;
+
+    FD_ZERO(&acceptFds);
+    FD_SET(serverSocket, &acceptFds);
+
+    select(serverSocket + 1, &acceptFds, 0, 0, &tv);
+
+    if (FD_ISSET(serverSocket, &acceptFds))
+    {
+        clientSocket = accept(serverSocket, (struct sockaddr *)&their_addr, &sin_size);
+        (void) printf("Accepted new connection\n");
+    }
 }
 
 static void handleNewServiceDiscoveryRequests()
@@ -163,6 +262,7 @@ void SERVER_init()
 	getOwnIpAddress(ownIpAddress);
 
 	servedPortNo = (INVALID_32_BIT_INT);
+	clientSocket = (INVALID_32_BIT_INT);
 
 	SCHED_registerCallback(&funcEntry);
 }
@@ -172,9 +272,18 @@ void SERVER_publishService(unsigned int portNo)
 	servedPortNo = portNo;
 
 	initiateServiceDiscoverySocket();
+	initiateServerSocketFd();
 }
 
 void SERVER_send(char* buf, unsigned int size)
 {
+	if((INVALID_32_BIT_INT) != clientSocket)
+	{
+		int sentBytes = 0;
 
+		while(sentBytes < (int)size)
+		{
+			sentBytes += send(clientSocket, buf, size, 0);
+		}
+	}
 }

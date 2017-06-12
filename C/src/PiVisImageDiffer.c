@@ -7,6 +7,7 @@
 #include <stdio.h>
 
 #define COLOR_IMAGE_SIZE (640 * 480 * 3)
+#define GRAYSCALE_IMAGE_SIZE (640 * 480)
 
 static SchdRunFuncEntry funcEntry;
 
@@ -26,6 +27,9 @@ static void run(void)
 		unsigned int colorIndex = 0u;
 		unsigned int diff = 0u;
 		unsigned int numDiffs = 0u;
+
+		char imageToSend[(GRAYSCALE_IMAGE_SIZE)] = "";
+		unsigned int toSendPixelIndex = 0u;
 
 		if(1u == receivedFirstImage)
 		{
@@ -48,9 +52,15 @@ static void run(void)
 								prevBuffer[bufIndex],
 								recBuffer[bufIndex]);
 						numDiffs += 1u;
+						imageToSend[toSendPixelIndex] = 255u;
+					}
+					else
+					{
+						imageToSend[toSendPixelIndex] = 0u;
 					}
 					colorIndex = 0;
 					diff = 0u;
+					toSendPixelIndex += 1u;
 				}
 			}
 		}
@@ -60,6 +70,8 @@ static void run(void)
 		(void) memcpy(prevBuffer, recBuffer, (COLOR_IMAGE_SIZE));
 
 		(void) printf("Num diffs found: %u\n", numDiffs);
+
+		SERVER_send(imageToSend, (GRAYSCALE_IMAGE_SIZE));
 	}
 }
 
