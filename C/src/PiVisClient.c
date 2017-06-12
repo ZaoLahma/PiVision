@@ -106,7 +106,6 @@ static void stateConnected(void)
 	if(-1 != numBytesReceived)
 	{
 		bufferIndex += numBytesReceived;
-		(void) printf("bufferIndex: %u\n", bufferIndex);
 	}
 	else
 	{

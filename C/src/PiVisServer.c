@@ -200,7 +200,7 @@ static void handleNewConnections()
     fd_set acceptFds;
 
     tv.tv_sec = 0;
-    tv.tv_usec = 100000;
+    tv.tv_usec = 50000;
 
     struct sockaddr_storage their_addr;
     socklen_t sin_size;
@@ -221,34 +221,37 @@ static void handleNewConnections()
 
 static void handleNewServiceDiscoveryRequests()
 {
-	char messageBuf[50];
-	unsigned int addrLen = sizeof(addr);
-	int bytesReceived = recvfrom(serviceDiscoverySocket,
-								 messageBuf,
-								 sizeof(messageBuf),
-								 0,
-								 (struct sockaddr *)&addr,
-								 &addrLen);
-
-	printf("messageBuf: %s\n", messageBuf);
-
-	messageBuf[bytesReceived] = '\0';
-
-	char header[] = "WHERE_IS_";
-
-	if((unsigned int)bytesReceived > strlen(header))
+	if(INVALID_32_BIT_INT == clientSocket)
 	{
-		char* portNoStr = &messageBuf[strlen(header)];
-		unsigned int portNo = atoi(portNoStr);
+		char messageBuf[50];
+		unsigned int addrLen = sizeof(addr);
+		int bytesReceived = recvfrom(serviceDiscoverySocket,
+									 messageBuf,
+									 sizeof(messageBuf),
+									 0,
+									 (struct sockaddr *)&addr,
+									 &addrLen);
 
-		if(servedPortNo == portNo)
+		printf("messageBuf: %s\n", messageBuf);
+
+		messageBuf[bytesReceived] = '\0';
+
+		char header[] = "WHERE_IS_";
+
+		if((unsigned int)bytesReceived > strlen(header))
 		{
-			printf("Service provided. Responding to: %s\n", inet_ntoa(addr.sin_addr));
-			sendto(serviceDiscoverySocket, ownIpAddress, IP_ADDRESS_LENGTH, 0, (struct sockaddr*)&addr, sizeof(addr));
-		}
-		else
-		{
-			printf("Service not provided\n");
+			char* portNoStr = &messageBuf[strlen(header)];
+			unsigned int portNo = atoi(portNoStr);
+
+			if(servedPortNo == portNo)
+			{
+				printf("Service provided. Responding to: %s\n", inet_ntoa(addr.sin_addr));
+				sendto(serviceDiscoverySocket, ownIpAddress, IP_ADDRESS_LENGTH, 0, (struct sockaddr*)&addr, sizeof(addr));
+			}
+			else
+			{
+				printf("Service not provided\n");
+			}
 		}
 	}
 

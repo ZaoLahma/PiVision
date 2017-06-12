@@ -31,6 +31,8 @@ static void run(void)
 		char imageToSend[(GRAYSCALE_IMAGE_SIZE)] = "";
 		unsigned int toSendPixelIndex = 0u;
 
+		unsigned int colorIntensity = 0u;
+
 		if(1u == receivedFirstImage)
 		{
 			for(; bufIndex < (COLOR_IMAGE_SIZE); ++bufIndex)
@@ -38,6 +40,7 @@ static void run(void)
 				diff += abs(prevBuffer[bufIndex] - recBuffer[bufIndex]);
 
 				colorIndex += 1u;
+				colorIntensity += recBuffer[bufIndex];
 
 				if(colorIndex > 2)
 				{
@@ -56,11 +59,12 @@ static void run(void)
 					}
 					else
 					{
-						imageToSend[toSendPixelIndex] = 0u;
+						imageToSend[toSendPixelIndex] = colorIntensity / 3u;
 					}
 					colorIndex = 0;
 					diff = 0u;
 					toSendPixelIndex += 1u;
+					colorIntensity = 0u;
 				}
 			}
 		}
