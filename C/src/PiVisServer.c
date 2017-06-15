@@ -179,7 +179,7 @@ static void initiateServiceDiscoverySocket(PiVisServerContext* context)
 
 	struct timeval timeout;
 	timeout.tv_sec = 0;
-	timeout.tv_usec = 1000;
+	timeout.tv_usec = 1;
 
 	setsockopt(context->serverContext.serviceDiscoverySocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
 }
@@ -197,7 +197,7 @@ static void handleNewConnections()
     fd_set acceptFds;
 
     tv.tv_sec = 0;
-    tv.tv_usec = 50000;
+    tv.tv_usec = 0;
 
     struct sockaddr_storage their_addr;
     socklen_t sin_size;
