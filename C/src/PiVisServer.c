@@ -32,7 +32,9 @@ static struct sockaddr_in addr;
 
 static void getOwnIpAddress(char* address);
 static void initiateServiceDiscoverySocket(void);
+static void initiateServiceDiscoverySocketContext(PiVisServerContext* context);
 static void initiateServerSocketFd();
+static void initiateServerSocketFdContext(PiVisServerContext* context);
 
 static void run(void);
 static void handleNewConnections(void);
@@ -140,6 +142,76 @@ static void initiateServerSocketFd()
 	setsockopt(serverSocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
 }
 
+static void initiateServerSocketFdContext(PiVisServerContext* context)
+{
+    struct addrinfo hints;
+    struct addrinfo* servinfo;
+    struct addrinfo* p;
+    int yes = 1;
+    int rv;
+
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
+
+    char portNoStr[6] = "";
+
+    sprintf(portNoStr, "%d", context->servedPortNo);
+
+    if ((rv = getaddrinfo(0, portNoStr, &hints, &servinfo)) != 0)
+    {
+    	printf("portNo: %u\n", context->servedPortNo);
+    	perror("getaddrinfo \n");
+    	exit(1);
+    }
+
+
+    for(p = servinfo; p != 0; p = p->ai_next)
+    {
+        if ((context->serverContext.serverSocket = socket(p->ai_family, p->ai_socktype,
+                             p->ai_protocol)) == -1)
+        {
+            continue;
+        }
+
+        if (setsockopt(context->serverContext.serverSocket, SOL_SOCKET, SO_REUSEADDR, &yes,
+                       sizeof(int)) == -1)
+        {
+        	perror("reuseaddr\n");
+            exit(1);
+        }
+
+        if (bind(context->serverContext.serverSocket, p->ai_addr, p->ai_addrlen) == -1)
+        {
+            close(context->serverContext.serverSocket);
+            continue;
+        }
+
+        break;
+    }
+
+    freeaddrinfo(servinfo);
+
+    if (p == 0)
+    {
+    	perror("p == 0\n");
+        exit(1);
+    }
+
+    if (listen(context->serverContext.serverSocket, 10) == -1)
+    {
+    	perror("listen\n");
+        exit(1);
+    }
+
+	struct timeval timeout;
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 1000;
+
+	setsockopt(context->serverContext.serverSocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
+}
+
 static void initiateServiceDiscoverySocket(void)
 {
 	unsigned int toServe = INVALID_32_BIT_INT;
@@ -185,6 +257,53 @@ static void initiateServiceDiscoverySocket(void)
 	timeout.tv_usec = 1000;
 
 	setsockopt(serviceDiscoverySocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
+}
+
+static void initiateServiceDiscoverySocketContext(PiVisServerContext* context)
+{
+	unsigned int toServe = INVALID_32_BIT_INT;
+
+	if(context->servedPortNo == COLOR_PORT_NO)
+	{
+		toServe = DISCOVER_COLOR_SERVICE;
+	}
+	else if(context->servedPortNo == GRAY_PORT_NO)
+	{
+		toServe = DISCOVER_GRAY_SERVICE;
+	}
+
+	printf("toServe: %u\n", toServe);
+
+    struct ip_mreq mreq;
+    context->serverContext.serviceDiscoverySocket = socket(AF_INET, SOCK_DGRAM, 0);
+	unsigned int yes = 1;
+    if(0 > setsockopt(context->serverContext.serviceDiscoverySocket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)))
+    {
+    	perror("setsockopt 1");
+    	exit(1);
+    }
+
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    addr.sin_port = htons(toServe);
+
+    if(0 > bind(context->serverContext.serviceDiscoverySocket, (struct sockaddr*)&addr, sizeof(addr)))
+    {
+    	perror("bind");
+    	exit(1);
+    }
+
+    mreq.imr_multiaddr.s_addr = inet_addr(MULTICAST_GROUP);
+    mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+
+    setsockopt(context->serverContext.serviceDiscoverySocket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq));
+
+	struct timeval timeout;
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 1000;
+
+	setsockopt(context->serverContext.serviceDiscoverySocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
 }
 
 static void run()
@@ -276,6 +395,12 @@ void SERVER_publishService(unsigned int portNo)
 
 	initiateServiceDiscoverySocket();
 	initiateServerSocketFd();
+}
+
+void SERVER_publishServiceContext(PiVisServerContext* context)
+{
+	initiateServiceDiscoverySocketContext(context);
+	initiateServerSocketFdContext(context);
 }
 
 void SERVER_send(char* buf, unsigned int size)
