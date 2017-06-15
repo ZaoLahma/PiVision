@@ -12,11 +12,11 @@ typedef struct PiVisServerContext_
 {
 	unsigned int servedPortNo;
 	PiVisServerInternalContext serverContext;
+	struct PiVisServerContext* next;
 } PiVisServerContext;
 
 void SERVER_init(void);
-void SERVER_publishServiceContext(PiVisServerContext* context);
-void SERVER_publishService(unsigned int portNo);
-void SERVER_send(char* buf, unsigned int size);
+void SERVER_publishService(PiVisServerContext* context);
+void SERVER_send(PiVisServerContext* context, char* buf, unsigned int size);
 
 #endif

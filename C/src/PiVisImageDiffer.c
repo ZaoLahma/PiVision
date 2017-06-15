@@ -16,6 +16,8 @@ static unsigned char prevBuffer[(COLOR_IMAGE_SIZE)];
 
 static unsigned char receivedFirstImage = 0u;
 
+static PiVisServerContext serverContext;
+
 static void run(void);
 
 static void run(void)
@@ -75,17 +77,18 @@ static void run(void)
 
 		(void) printf("Num diffs found: %u\n", numDiffs);
 
-		SERVER_send(imageToSend, (GRAYSCALE_IMAGE_SIZE));
+		SERVER_send(&serverContext, imageToSend, (GRAYSCALE_IMAGE_SIZE));
 	}
 }
 
 
 void IMAGEDIFF_init(void)
 {
+	serverContext.servedPortNo = 3071;
 	funcEntry.run = run;
 	funcEntry.next = 0;
 
-	SERVER_publishService(3071);
+	SERVER_publishService(&serverContext);
 
 	SCHED_registerCallback(&funcEntry);
 }

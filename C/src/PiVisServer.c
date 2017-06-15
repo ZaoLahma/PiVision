@@ -24,17 +24,12 @@
 
 static SchdRunFuncEntry funcEntry;
 static char ownIpAddress[IP_ADDRESS_LENGTH];
-static unsigned int servedPortNo;
-static int serverSocket;
-static int serviceDiscoverySocket;
-static int clientSocket;
 static struct sockaddr_in addr;
+static struct PiVisServerContext* connections;
 
 static void getOwnIpAddress(char* address);
-static void initiateServiceDiscoverySocket(void);
-static void initiateServiceDiscoverySocketContext(PiVisServerContext* context);
-static void initiateServerSocketFd();
-static void initiateServerSocketFdContext(PiVisServerContext* context);
+static void initiateServiceDiscoverySocket(PiVisServerContext* context);
+static void initiateServerSocketFd(PiVisServerContext* context);
 
 static void run(void);
 static void handleNewConnections(void);
@@ -72,77 +67,7 @@ static void getOwnIpAddress(char* address)
 	freeifaddrs(addrs);
 }
 
-static void initiateServerSocketFd()
-{
-    struct addrinfo hints;
-    struct addrinfo* servinfo;
-    struct addrinfo* p;
-    int yes = 1;
-    int rv;
-
-    memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_flags = AI_PASSIVE;
-
-    char portNoStr[6] = "";
-
-    sprintf(portNoStr, "%d", servedPortNo);
-
-    if ((rv = getaddrinfo(0, portNoStr, &hints, &servinfo)) != 0)
-    {
-    	printf("portNo: %u\n", servedPortNo);
-    	perror("getaddrinfo \n");
-    	exit(1);
-    }
-
-
-    for(p = servinfo; p != 0; p = p->ai_next)
-    {
-        if ((serverSocket = socket(p->ai_family, p->ai_socktype,
-                             p->ai_protocol)) == -1)
-        {
-            continue;
-        }
-
-        if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &yes,
-                       sizeof(int)) == -1)
-        {
-        	perror("reuseaddr\n");
-            exit(1);
-        }
-
-        if (bind(serverSocket, p->ai_addr, p->ai_addrlen) == -1)
-        {
-            close(serverSocket);
-            continue;
-        }
-
-        break;
-    }
-
-    freeaddrinfo(servinfo);
-
-    if (p == 0)
-    {
-    	perror("p == 0\n");
-        exit(1);
-    }
-
-    if (listen(serverSocket, 10) == -1)
-    {
-    	perror("listen\n");
-        exit(1);
-    }
-
-	struct timeval timeout;
-	timeout.tv_sec = 0;
-	timeout.tv_usec = 1000;
-
-	setsockopt(serverSocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
-}
-
-static void initiateServerSocketFdContext(PiVisServerContext* context)
+static void initiateServerSocketFd(PiVisServerContext* context)
 {
     struct addrinfo hints;
     struct addrinfo* servinfo;
@@ -212,54 +137,7 @@ static void initiateServerSocketFdContext(PiVisServerContext* context)
 	setsockopt(context->serverContext.serverSocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
 }
 
-static void initiateServiceDiscoverySocket(void)
-{
-	unsigned int toServe = INVALID_32_BIT_INT;
-
-	if(servedPortNo == COLOR_PORT_NO)
-	{
-		toServe = DISCOVER_COLOR_SERVICE;
-	}
-	else if(servedPortNo == GRAY_PORT_NO)
-	{
-		toServe = DISCOVER_GRAY_SERVICE;
-	}
-
-	printf("toServe: %u\n", toServe);
-
-    struct ip_mreq mreq;
-	serviceDiscoverySocket = socket(AF_INET, SOCK_DGRAM, 0);
-	unsigned int yes = 1;
-    if(0 > setsockopt(serviceDiscoverySocket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)))
-    {
-    	perror("setsockopt 1");
-    	exit(1);
-    }
-
-    memset(&addr, 0, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    addr.sin_port = htons(toServe);
-
-    if(0 > bind(serviceDiscoverySocket, (struct sockaddr*)&addr, sizeof(addr)))
-    {
-    	perror("bind");
-    	exit(1);
-    }
-
-    mreq.imr_multiaddr.s_addr = inet_addr(MULTICAST_GROUP);
-    mreq.imr_interface.s_addr = htonl(INADDR_ANY);
-
-    setsockopt(serviceDiscoverySocket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq));
-
-	struct timeval timeout;
-	timeout.tv_sec = 0;
-	timeout.tv_usec = 1000;
-
-	setsockopt(serviceDiscoverySocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
-}
-
-static void initiateServiceDiscoverySocketContext(PiVisServerContext* context)
+static void initiateServiceDiscoverySocket(PiVisServerContext* context)
 {
 	unsigned int toServe = INVALID_32_BIT_INT;
 
@@ -326,92 +204,109 @@ static void handleNewConnections()
 
     sin_size = sizeof their_addr;
 
-    FD_ZERO(&acceptFds);
-    FD_SET(serverSocket, &acceptFds);
+	PiVisServerContext* context = connections;
 
-    select(serverSocket + 1, &acceptFds, 0, 0, &tv);
+	while(context != 0)
+	{
+		FD_ZERO(&acceptFds);
+		FD_SET(context->serverContext.serverSocket, &acceptFds);
 
-    if (FD_ISSET(serverSocket, &acceptFds))
-    {
-        clientSocket = accept(serverSocket, (struct sockaddr *)&their_addr, &sin_size);
-        (void) printf("Accepted new connection\n");
-    }
+		select(context->serverContext.serverSocket + 1, &acceptFds, 0, 0, &tv);
+
+		if (FD_ISSET(context->serverContext.serverSocket, &acceptFds))
+		{
+			context->serverContext.clientSocket = accept(context->serverContext.serverSocket, (struct sockaddr *)&their_addr, &sin_size);
+			(void) printf("Accepted new connection\n");
+		}
+		context = context->next;
+	}
 }
 
 static void handleNewServiceDiscoveryRequests()
 {
-	if((int)INVALID_32_BIT_INT == clientSocket)
+	PiVisServerContext* context = connections;
+
+	while(context != 0)
 	{
-		char messageBuf[50];
-		unsigned int addrLen = sizeof(addr);
-		int bytesReceived = recvfrom(serviceDiscoverySocket,
-									 messageBuf,
-									 sizeof(messageBuf),
-									 0,
-									 (struct sockaddr *)&addr,
-									 &addrLen);
-
-		printf("messageBuf: %s\n", messageBuf);
-
-		messageBuf[bytesReceived] = '\0';
-
-		char header[] = "WHERE_IS_";
-
-		if((unsigned int)bytesReceived > strlen(header))
+		if((int)INVALID_32_BIT_INT == context->serverContext.clientSocket)
 		{
-			char* portNoStr = &messageBuf[strlen(header)];
-			unsigned int portNo = atoi(portNoStr);
+			char messageBuf[50];
+			unsigned int addrLen = sizeof(addr);
+			int bytesReceived = recvfrom(context->serverContext.serviceDiscoverySocket,
+										 messageBuf,
+										 sizeof(messageBuf),
+										 0,
+										 (struct sockaddr *)&addr,
+										 &addrLen);
 
-			if(servedPortNo == portNo)
+			printf("messageBuf: %s\n", messageBuf);
+
+			messageBuf[bytesReceived] = '\0';
+
+			char header[] = "WHERE_IS_";
+
+			if((unsigned int)bytesReceived > strlen(header))
 			{
-				printf("Service provided. Responding to: %s\n", inet_ntoa(addr.sin_addr));
-				sendto(serviceDiscoverySocket, ownIpAddress, IP_ADDRESS_LENGTH, 0, (struct sockaddr*)&addr, sizeof(addr));
-			}
-			else
-			{
-				printf("Service not provided\n");
+				char* portNoStr = &messageBuf[strlen(header)];
+				unsigned int portNo = atoi(portNoStr);
+
+				if(context->servedPortNo == portNo)
+				{
+					printf("Service provided. Responding to: %s\n", inet_ntoa(addr.sin_addr));
+					sendto(context->serverContext.serviceDiscoverySocket, ownIpAddress, IP_ADDRESS_LENGTH, 0, (struct sockaddr*)&addr, sizeof(addr));
+				}
+				else
+				{
+					printf("Service not provided\n");
+				}
 			}
 		}
+		context = context->next;
 	}
-
 }
 
 void SERVER_init()
 {
+	connections = 0;
+
 	funcEntry.run = run;
 	funcEntry.next = 0;
 
 	getOwnIpAddress(ownIpAddress);
 
-	servedPortNo = (INVALID_32_BIT_INT);
-	clientSocket = (INVALID_32_BIT_INT);
-
 	SCHED_registerCallback(&funcEntry);
 }
 
-void SERVER_publishService(unsigned int portNo)
+void SERVER_publishService(PiVisServerContext* context)
 {
-	servedPortNo = portNo;
-
-	initiateServiceDiscoverySocket();
-	initiateServerSocketFd();
+	context->next = 0;
+	context->serverContext.clientSocket = (INVALID_32_BIT_INT);
+	if(0 == connections)
+	{
+		connections = (struct PiVisServerContext*)context;
+	}
+	else
+	{
+		PiVisServerContext* last = (PiVisServerContext*)connections;
+		while(last->next != 0)
+		{
+			last = (PiVisServerContext*)last->next;
+		}
+		last->next = (struct PiVisServerContext*)context;
+	}
+	initiateServiceDiscoverySocket(context);
+	initiateServerSocketFd(context);
 }
 
-void SERVER_publishServiceContext(PiVisServerContext* context)
+void SERVER_send(PiVisServerContext* context, char* buf, unsigned int size)
 {
-	initiateServiceDiscoverySocketContext(context);
-	initiateServerSocketFdContext(context);
-}
-
-void SERVER_send(char* buf, unsigned int size)
-{
-	if((int)(INVALID_32_BIT_INT) != clientSocket)
+	if((int)(INVALID_32_BIT_INT) != context->serverContext.clientSocket)
 	{
 		int sentBytes = 0;
 
 		while(sentBytes < (int)size)
 		{
-			sentBytes += send(clientSocket, buf, size, 0);
+			sentBytes += send(context->serverContext.clientSocket, buf, size, 0);
 		}
 	}
 }
