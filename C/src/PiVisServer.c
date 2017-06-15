@@ -10,6 +10,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <netdb.h>
+#include <unistd.h>
 
 #define IP_ADDRESS_LENGTH INET_ADDRSTRLEN
 #define INVALID_32_BIT_INT 0xFFFFFFFF
@@ -154,7 +155,6 @@ static void initiateServiceDiscoverySocket(void)
 
 	printf("toServe: %u\n", toServe);
 
-    int nbytes;
     struct ip_mreq mreq;
 	serviceDiscoverySocket = socket(AF_INET, SOCK_DGRAM, 0);
 	unsigned int yes = 1;
@@ -221,7 +221,7 @@ static void handleNewConnections()
 
 static void handleNewServiceDiscoveryRequests()
 {
-	if(INVALID_32_BIT_INT == clientSocket)
+	if((int)INVALID_32_BIT_INT == clientSocket)
 	{
 		char messageBuf[50];
 		unsigned int addrLen = sizeof(addr);
@@ -280,7 +280,7 @@ void SERVER_publishService(unsigned int portNo)
 
 void SERVER_send(char* buf, unsigned int size)
 {
-	if((INVALID_32_BIT_INT) != clientSocket)
+	if((int)(INVALID_32_BIT_INT) != clientSocket)
 	{
 		int sentBytes = 0;
 
