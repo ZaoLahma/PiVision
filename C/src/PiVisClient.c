@@ -1,5 +1,6 @@
 #include "../inc/PiVisClient.h"
 #include "../inc/PiVisScheduler.h"
+#include "../inc/PiVisConstants.h"
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -11,12 +12,6 @@
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
-
-#define COLOR_IMAGE_SIZE (640 * 480 * 3)
-#define DISCOVER_COLOR_SERVICE (3069)
-#define DISCOVER_COLOR_SERVICE_MESSAGE "WHERE_IS_3070"
-#define MULTICAST_GROUP "224.1.1.1"
-#define IP_ADDRESS_LENGTH (30)
 
 typedef void (*StateFunc)(void);
 typedef struct CLIENT_state

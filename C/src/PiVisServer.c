@@ -1,9 +1,9 @@
 #include "../inc/PiVisServer.h"
 #include "../inc/PiVisScheduler.h"
+#include "../inc/PiVisConstants.h"
 #include <stdio.h>
 #include <sys/types.h>
 #include <ifaddrs.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <errno.h>
 #include <sys/time.h>
@@ -11,16 +11,6 @@
 #include <stdlib.h>
 #include <netdb.h>
 #include <unistd.h>
-
-#define IP_ADDRESS_LENGTH INET_ADDRSTRLEN
-#define INVALID_32_BIT_INT 0xFFFFFFFF
-#define COLOR_PORT_NO (3070)
-#define GRAY_PORT_NO (3071)
-#define DISCOVER_COLOR_SERVICE (3069)
-#define DISCOVER_COLOR_SERVICE_MESSAGE "WHERE_IS_3070"
-#define DISCOVER_GRAY_SERVICE (3068)
-#define DISCOVER_GRAY_SERVICE_MESSAGE "WHERE_IS_3071"
-#define MULTICAST_GROUP "224.1.1.1"
 
 static SchdRunFuncEntry funcEntry;
 static char ownIpAddress[IP_ADDRESS_LENGTH];
@@ -204,7 +194,7 @@ static void handleNewConnections()
 
     sin_size = sizeof their_addr;
 
-	PiVisServerContext* context = connections;
+	PiVisServerContext* context = (PiVisServerContext*)connections;
 
 	while(context != 0)
 	{
@@ -218,13 +208,13 @@ static void handleNewConnections()
 			context->serverContext.clientSocket = accept(context->serverContext.serverSocket, (struct sockaddr *)&their_addr, &sin_size);
 			(void) printf("Accepted new connection\n");
 		}
-		context = context->next;
+		context = (PiVisServerContext*)context->next;
 	}
 }
 
 static void handleNewServiceDiscoveryRequests()
 {
-	PiVisServerContext* context = connections;
+	PiVisServerContext* context = (PiVisServerContext*)connections;
 
 	while(context != 0)
 	{
@@ -261,7 +251,7 @@ static void handleNewServiceDiscoveryRequests()
 				}
 			}
 		}
-		context = context->next;
+		context = (PiVisServerContext*)context->next;
 	}
 }
 
