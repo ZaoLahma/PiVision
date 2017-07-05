@@ -4,8 +4,12 @@
 #include <netinet/in.h>
 
 #define COLOR_IMAGE_SIZE (640 * 480 * 3)
+#define GRAYSCALE_IMAGE_SIZE (640 * 480)
+
 #define IP_ADDRESS_LENGTH INET_ADDRSTRLEN
+
 #define INVALID_32_BIT_INT 0xFFFFFFFF
+
 #define COLOR_PORT_NO (3070)
 #define GRAY_PORT_NO (3071)
 #define DISCOVER_COLOR_SERVICE (3069)

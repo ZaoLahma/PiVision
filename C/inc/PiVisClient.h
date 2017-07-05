@@ -3,6 +3,6 @@
 
 void CLIENT_init(void);
 
-int CLIENT_receive(char* buf, unsigned int bufSize);
+int CLIENT_receive(unsigned char* buf, unsigned int bufSize);
 
 #endif

@@ -179,7 +179,7 @@ static int socket_receive(int fileDesc, void* data, int max_size)
 
 static void run(void)
 {
-	(void) printf("Handling state: %s\n", state[currState].state);
+	//(void) printf("Handling state: %s\n", state[currState].state);
 
 	state[currState].stateFunc();
 }
@@ -201,7 +201,7 @@ void CLIENT_init(void)
 	SCHED_registerCallback(&funcEntry);
 }
 
-int CLIENT_receive(char* buf, unsigned int bufSize)
+int CLIENT_receive(unsigned char* buf, unsigned int bufSize)
 {
 	int retVal = -1;
 	if(4u == currState)
@@ -209,11 +209,6 @@ int CLIENT_receive(char* buf, unsigned int bufSize)
 		(void) memcpy(buf, &buffer[bufferIndex], bufSize);
 		retVal = bufSize;
 		bufferIndex += retVal;
-
-		(void) printf("bufferIndex: %u, bufSize: %u, COLOR_IMAGE_SIZE: %u\n",
-				bufferIndex,
-				bufSize,
-				(COLOR_IMAGE_SIZE));
 	}
 
 	return retVal;

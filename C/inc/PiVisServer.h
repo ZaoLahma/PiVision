@@ -11,6 +11,8 @@ typedef struct PiVisServerInternalContext_
 typedef struct PiVisServerContext_
 {
 	unsigned int servedPortNo;
+	unsigned int serviceDiscoveryPortNo;
+	unsigned char connected;
 	PiVisServerInternalContext serverContext;
 	struct PiVisServerContext* next;
 } PiVisServerContext;
@@ -18,5 +20,6 @@ typedef struct PiVisServerContext_
 void SERVER_init(void);
 void SERVER_publishService(PiVisServerContext* context);
 void SERVER_send(PiVisServerContext* context, char* buf, unsigned int size);
+int SERVER_receive(PiVisServerContext* context, char* buf, unsigned int bufSize);
 
 #endif

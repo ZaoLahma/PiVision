@@ -2,6 +2,8 @@
 #include "../inc/PiVisClient.h"
 #include "../inc/PiVisImageDiffer.h"
 #include "../inc/PiVisServer.h"
+#include "../inc/PiVisDiag.h"
+#include "../inc/PiVisImageProvider.h"
 
 int main(void)
 {
@@ -12,6 +14,10 @@ int main(void)
 	SERVER_init();
 
 	IMAGEDIFF_init();
+
+	DIAG_init();
+
+	//IMGPROVIDER_init();
 
 	SCHED_run();
 
