@@ -21,7 +21,7 @@ static void run(void);
 
 static void run(void)
 {
-	if((COLOR_IMAGE_SIZE) == CLIENT_receive(recBuffer, (COLOR_IMAGE_SIZE)))
+	if((COLOR_IMAGE_SIZE) == IMGPROVIDER_getPixelData(recBuffer, (COLOR_IMAGE_SIZE)))
 	{
 		unsigned int bufIndex = 0u;
 		unsigned int colorIndex = 0u;

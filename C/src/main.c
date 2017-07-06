@@ -17,7 +17,7 @@ int main(void)
 
 	DIAG_init();
 
-	//IMGPROVIDER_init();
+	IMGPROVIDER_init();
 
 	SCHED_run();
 

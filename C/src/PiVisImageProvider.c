@@ -8,16 +8,13 @@
 static SchdRunFuncEntry funcEntry;
 
 static unsigned char recBuffer[COLOR_IMAGE_SIZE];
-static unsigned int  recBufferSize;
+static unsigned int recBufferSize;
 
 static void run(void);
 
 static void run(void)
 {
-	if((COLOR_IMAGE_SIZE) == CLIENT_receive(recBuffer, (COLOR_IMAGE_SIZE)))
-	{
-		recBufferSize = (COLOR_IMAGE_SIZE);
-	}
+	recBufferSize = CLIENT_receive(recBuffer, (COLOR_IMAGE_SIZE));
 }
 
 void IMGPROVIDER_init(void)

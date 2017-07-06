@@ -201,9 +201,9 @@ void CLIENT_init(void)
 	SCHED_registerCallback(&funcEntry);
 }
 
-int CLIENT_receive(unsigned char* buf, unsigned int bufSize)
+unsigned int CLIENT_receive(unsigned char* buf, unsigned int bufSize)
 {
-	int retVal = -1;
+	unsigned int retVal = 0u;
 	if(4u == currState)
 	{
 		(void) memcpy(buf, &buffer[bufferIndex], bufSize);
