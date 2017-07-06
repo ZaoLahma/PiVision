@@ -110,7 +110,6 @@ static void stateConnected(void)
 
 	if(bufferIndex == (COLOR_IMAGE_SIZE))
 	{
-		(void) printf("Received full image\n");
 		bufferIndex = 0;
 		currState += 1u;
 	}
@@ -201,7 +200,7 @@ void CLIENT_init(void)
 	SCHED_registerCallback(&funcEntry);
 }
 
-unsigned int CLIENT_receive(unsigned char* buf, unsigned int bufSize)
+unsigned int CLIENT_receive(char* buf, unsigned int bufSize)
 {
 	unsigned int retVal = 0u;
 	if(4u == currState)

@@ -209,7 +209,6 @@ static void handleNewServiceDiscoveryRequests()
 
 	while(context != 0)
 	{
-		(void) printf("context: %p, context->next: %p\n", context, context->next);
 		if(0 == context->connected)
 		{
 			char messageBuf[50];
@@ -299,9 +298,12 @@ void SERVER_send(PiVisServerContext* context, char* buf, unsigned int size)
 
 int SERVER_receive(PiVisServerContext* context, char* buf, unsigned int bufSize)
 {
-	int numBytesReceived = 0;
+	int numBytesReceived = -1;
 
-	numBytesReceived = recv(context->serverContext.clientSocket, buf, bufSize, 0);
+	if(0u != context->connected)
+	{
+		numBytesReceived = recv(context->serverContext.clientSocket, buf, bufSize, 0);
+	}
 
 	return numBytesReceived;
 }

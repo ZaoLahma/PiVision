@@ -3,11 +3,10 @@
 #include "../inc/PiVisConstants.h"
 #include "../inc/PiVisClient.h"
 #include <string.h>
-#include <stdio.h>
 
 static SchdRunFuncEntry funcEntry;
 
-static unsigned char recBuffer[COLOR_IMAGE_SIZE];
+static char recBuffer[COLOR_IMAGE_SIZE];
 static unsigned int recBufferSize;
 
 static void run(void);
@@ -27,7 +26,7 @@ void IMGPROVIDER_init(void)
 	SCHED_registerCallback(&funcEntry);
 }
 
-int IMGPROVIDER_getPixelData(unsigned char* buf, unsigned int bufSize)
+int IMGPROVIDER_getPixelData(char* buf, unsigned int bufSize)
 {
 	unsigned int bytesToCopy = bufSize;
 
@@ -35,9 +34,6 @@ int IMGPROVIDER_getPixelData(unsigned char* buf, unsigned int bufSize)
 	{
 		bytesToCopy = recBufferSize;
 	}
-
-	(void) printf("bytesToCopy: %u\n", bytesToCopy);
-
 	(void) memcpy(buf, recBuffer, bytesToCopy);
 
 	return bytesToCopy;

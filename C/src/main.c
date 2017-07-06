@@ -4,6 +4,7 @@
 #include "../inc/PiVisServer.h"
 #include "../inc/PiVisDiag.h"
 #include "../inc/PiVisImageProvider.h"
+#include "../inc/PiVisControl.h"
 
 int main(void)
 {
@@ -18,6 +19,8 @@ int main(void)
 	DIAG_init();
 
 	IMGPROVIDER_init();
+
+	CTRL_init();
 
 	SCHED_run();
 

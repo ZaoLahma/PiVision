@@ -10,8 +10,8 @@
 
 static SchdRunFuncEntry funcEntry;
 
-static unsigned char recBuffer[(COLOR_IMAGE_SIZE)];
-static unsigned char prevBuffer[(COLOR_IMAGE_SIZE)];
+static char recBuffer[(COLOR_IMAGE_SIZE)];
+static char prevBuffer[(COLOR_IMAGE_SIZE)];
 
 static unsigned char receivedFirstImage = 0u;
 
@@ -46,6 +46,7 @@ static void run(void)
 				{
 					if(diff > 100)
 					{
+						/*
 						(void) printf("Found diff: %u. Buffers R: %u - %u, G: %u - %u, B: %u - %u\n",
 								diff,
 								prevBuffer[bufIndex - 2u],
@@ -54,6 +55,7 @@ static void run(void)
 								recBuffer[bufIndex - 1u],
 								prevBuffer[bufIndex],
 								recBuffer[bufIndex]);
+						*/
 						numDiffs += 1u;
 						imageToSend[toSendPixelIndex] = 255u;
 					}
@@ -73,7 +75,7 @@ static void run(void)
 
 		(void) memcpy(prevBuffer, recBuffer, (COLOR_IMAGE_SIZE));
 
-		(void) printf("Num diffs found: %u\n", numDiffs);
+		//(void) printf("Num diffs found: %u\n", numDiffs);
 
 		SERVER_send(&serverContext, imageToSend, (GRAYSCALE_IMAGE_SIZE));
 	}
