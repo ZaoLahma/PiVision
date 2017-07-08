@@ -277,8 +277,9 @@ void SERVER_publishService(PiVisServerContext* context)
 	initiateServerSocketFd(context);
 }
 
-void SERVER_send(PiVisServerContext* context, char* buf, unsigned int size)
+int SERVER_send(PiVisServerContext* context, char* buf, unsigned int size)
 {
+	int retVal = 0;
 	if(0u != context->connected)
 	{
 		int sentBytes = 0;
@@ -294,6 +295,12 @@ void SERVER_send(PiVisServerContext* context, char* buf, unsigned int size)
 			}
 		}
 	}
+	else
+	{
+		retVal = -1;
+	}
+
+	return retVal;
 }
 
 int SERVER_receive(PiVisServerContext* context, char* buf, unsigned int bufSize)

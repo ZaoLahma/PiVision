@@ -67,7 +67,10 @@ class PiVisClient:
                 pass  
         
         self.data = self.receiveBuf
-        self.receiveBuf = []  
+        self.receiveBuf = []
+        
+    def send(self, data):
+        self.serverSocket.sendall(data)
     
     def run(self):
         self.states[self.stateIndex]()

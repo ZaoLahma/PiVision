@@ -1,8 +1,9 @@
 #include "../inc/PiVisDiag.h"
 #include "../inc/PiVisScheduler.h"
 #include "../inc/PiVisServer.h"
-#include "../inc/PiVisConstants.h"
+#include "../inc/PiVisImageDataTL.h"
 #include <stdio.h>
+#include <string.h>
 
 #define DIAG_PORT_NO 3333
 #define DIAG_SERVICE_DISCOVERY_PORT_NO 3334
@@ -14,8 +15,10 @@ static void run(void)
 {
 	if(serverContext.connected)
 	{
-		char toSend[] = "DIAG_DATA\n";
-		SERVER_send(&serverContext, toSend, sizeof(toSend));
+		unsigned int droppedFrames = IMGDATATL_getNumDroppedFrames();
+		char toSend[7] = "";
+		sprintf(toSend, "%u\r\n", droppedFrames);
+		SERVER_send(&serverContext, toSend, strlen(toSend));
 	}
 }
 

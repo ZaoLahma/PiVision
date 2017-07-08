@@ -210,8 +210,3 @@ unsigned int CLIENT_receive(char* buf, unsigned int bufSize)
 
 	return retVal;
 }
-
-void CLIENT_send(char* buf, unsigned int bufSize)
-{
-
-}

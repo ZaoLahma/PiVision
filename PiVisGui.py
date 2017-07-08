@@ -23,6 +23,7 @@ class PiVisGuiSchedThread(threading.Thread):
 class PiVisGui:
     def __init__(self, guiScheduler, client, mode):
         self.scheduler = guiScheduler
+        self.frameNo = 0
         self.mode = mode
         self.client = client
         self.resolution = PiVisConstants.IMAGE_RESOLUTION
@@ -40,6 +41,12 @@ class PiVisGui:
             self.showImage(image)
         elif "gray" == mode:
             self.showGrayScaleImage(image)
+        ackData = bytearray();
+        ackData.extend([self.frameNo])
+        self.client.send(ackData)
+        self.frameNo += 1
+        if self.frameNo > 255:
+            self.frameNo = 0
         
     def onClose(self):
         self.scheduler.stop()
