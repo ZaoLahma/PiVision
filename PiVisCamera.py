@@ -13,14 +13,13 @@ class PiVisCamera:
         self.camera = picamera.PiCamera()
         self.camera.rotation = 180
         self.resolution = resolution
-        self.camera.resolution = self.resolution
-        self.camera.start_preview()        
+        self.camera.resolution = self.resolution      
         time.sleep(2)
         scheduler.registerRunnable(self.run) 
 
     def run(self):
         currImage = io.BytesIO()
-        self.camera.capture(currImage, 'rgb')
+        self.camera.capture(currImage, 'rgb', use_video_port=True)
         self.server.send(bytearray(currImage.getvalue()))
 
 if __name__ == "__main__":
