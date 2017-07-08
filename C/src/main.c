@@ -5,6 +5,7 @@
 #include "../inc/PiVisDiag.h"
 #include "../inc/PiVisImageProvider.h"
 #include "../inc/PiVisControl.h"
+#include "../inc/PiVisImageDataTL.h"
 
 int main(void)
 {
@@ -21,6 +22,8 @@ int main(void)
 	IMGPROVIDER_init();
 
 	CTRL_init();
+
+	IMGDATATL_init();
 
 	SCHED_run();
 

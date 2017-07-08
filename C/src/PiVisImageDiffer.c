@@ -1,9 +1,8 @@
 #include "../inc/PiVisImageDiffer.h"
-#include "../inc/PiVisClient.h"
 #include "../inc/PiVisScheduler.h"
-#include "../inc/PiVisServer.h"
 #include "../inc/PiVisConstants.h"
 #include "../inc/PiVisImageProvider.h"
+#include "../inc/PiVisImageDataTL.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -14,8 +13,6 @@ static char recBuffer[(COLOR_IMAGE_SIZE)];
 static char prevBuffer[(COLOR_IMAGE_SIZE)];
 
 static unsigned char receivedFirstImage = 0u;
-
-static PiVisServerContext serverContext;
 
 static void run(void);
 
@@ -77,19 +74,15 @@ static void run(void)
 
 		//(void) printf("Num diffs found: %u\n", numDiffs);
 
-		SERVER_send(&serverContext, imageToSend, (GRAYSCALE_IMAGE_SIZE));
+		IMGDATATL_send(imageToSend, (GRAYSCALE_IMAGE_SIZE));
 	}
 }
 
 
 void IMAGEDIFF_init(void)
 {
-	serverContext.servedPortNo = (GRAY_PORT_NO);
-	serverContext.serviceDiscoveryPortNo = (DISCOVER_GRAY_SERVICE);
 	funcEntry.run = run;
 	funcEntry.next = 0;
-
-	SERVER_publishService(&serverContext);
 
 	SCHED_registerCallback(&funcEntry);
 }
