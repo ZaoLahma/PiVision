@@ -55,7 +55,7 @@ static void run(void)
 								recBuffer[bufIndex - 1u],
 								prevBuffer[bufIndex],
 								recBuffer[bufIndex]);
-						*/
+								*/
 						numDiffs += 1u;
 						imageToSend[toSendPixelIndex] = 255u;
 					}

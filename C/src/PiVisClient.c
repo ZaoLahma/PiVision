@@ -96,7 +96,7 @@ static void stateConnecting(void)
 
 static void stateConnected(void)
 {
-	int numBytesReceived = socket_receive(socketFd, &buffer[bufferIndex], (COLOR_IMAGE_SIZE));
+	int numBytesReceived = socket_receive(socketFd, &buffer[bufferIndex], (COLOR_IMAGE_SIZE) - bufferIndex);
 
 	if(-1 != numBytesReceived)
 	{
@@ -178,8 +178,6 @@ static int socket_receive(int fileDesc, void* data, int max_size)
 
 static void run(void)
 {
-	//(void) printf("Handling state: %s\n", state[currState].state);
-
 	state[currState].stateFunc();
 }
 
@@ -211,4 +209,9 @@ unsigned int CLIENT_receive(char* buf, unsigned int bufSize)
 	}
 
 	return retVal;
+}
+
+void CLIENT_send(char* buf, unsigned int bufSize)
+{
+
 }

@@ -3,6 +3,7 @@
 #include "../inc/PiVisConstants.h"
 #include "../inc/PiVisClient.h"
 #include <string.h>
+#include <stdio.h>
 
 static SchdRunFuncEntry funcEntry;
 

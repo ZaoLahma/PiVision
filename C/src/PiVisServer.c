@@ -27,18 +27,12 @@ static void handleNewServiceDiscoveryRequests(void);
 
 static void getOwnIpAddress(char* address)
 {
-	printf("getOwnIpAddress called\n");
-
 	struct ifaddrs* addrs;
-	int retVal = getifaddrs(&addrs);
-
-	(void) printf("retVal: %d\n", retVal);
-
+	(void) getifaddrs(&addrs);
 	struct ifaddrs* tmp = addrs;
 
 	while(tmp)
 	{
-		printf("In tmp\n");
 	    if (tmp->ifa_addr && tmp->ifa_addr->sa_family == AF_INET)
 	    {
 	        struct sockaddr_in *pAddr = (struct sockaddr_in *)tmp->ifa_addr;
@@ -220,12 +214,12 @@ static void handleNewServiceDiscoveryRequests()
 										 (struct sockaddr *)&addr,
 										 &addrLen);
 
-			messageBuf[bytesReceived] = '\0';
-
 			char header[] = "WHERE_IS_";
 
 			if(bytesReceived > (int)strlen(header))
 			{
+				messageBuf[bytesReceived] = '\0';
+
 				char* portNoStr = &messageBuf[strlen(header)];
 				unsigned int portNo = atoi(portNoStr);
 
@@ -285,13 +279,19 @@ void SERVER_publishService(PiVisServerContext* context)
 
 void SERVER_send(PiVisServerContext* context, char* buf, unsigned int size)
 {
-	if((int)(INVALID_32_BIT_INT) != context->serverContext.clientSocket)
+	if(0u != context->connected)
 	{
 		int sentBytes = 0;
+		int sendResponse = 0;
 
 		while(sentBytes < (int)size)
 		{
-			sentBytes += send(context->serverContext.clientSocket, buf, size, 0);
+			sendResponse = send(context->serverContext.clientSocket, buf, size, 0);
+
+			if(-1 < sendResponse)
+			{
+				sentBytes += sendResponse;
+			}
 		}
 	}
 }

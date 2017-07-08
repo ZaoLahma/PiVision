@@ -9,9 +9,9 @@ from tkinter import messagebox
 import sys
 
 class PiVisGuiSchedThread(threading.Thread):
-    def __init__(self, scheduler):
+    def __init__(self, guiScheduler):
         threading.Thread.__init__(self)
-        self.scheduler = scheduler
+        self.scheduler = guiScheduler
         
     def run(self):
         self.scheduler.run()
@@ -21,8 +21,8 @@ class PiVisGuiSchedThread(threading.Thread):
         self.join()
 
 class PiVisGui:
-    def __init__(self, scheduler, client, mode):
-        self.scheduler = scheduler
+    def __init__(self, guiScheduler, client, mode):
+        self.scheduler = guiScheduler
         self.mode = mode
         self.client = client
         self.resolution = PiVisConstants.IMAGE_RESOLUTION
@@ -32,7 +32,7 @@ class PiVisGui:
         self.canvas.pack()
         self.image = tkinter.PhotoImage(width=self.resolution[0], height=self.resolution[1])
         self.canvas.create_image((self.resolution[0]/2, self.resolution[1]/2), image=self.image, state="normal")        
-        scheduler.registerRunnable(self.run)
+        guiScheduler.registerRunnable(self.run)
         
     def run(self):
         image = self.client.getData()
@@ -103,19 +103,22 @@ class PiVisGui:
         self.window.mainloop()
         
 if __name__ == "__main__":
-    scheduler = PiVisScheduler()
-    schedThread = PiVisGuiSchedThread(scheduler)
+    guiScheduler = PiVisScheduler()
+    clientScheduler = PiVisScheduler()
+    guiSchedThread = PiVisGuiSchedThread(guiScheduler)
+    clientSchedThread = PiVisGuiSchedThread(clientScheduler)
     client = None
     mode = sys.argv[1]
     if mode == "color":
-        client = PiVisClient(scheduler, 
+        client = PiVisClient(clientScheduler, 
                              PiVisConstants.COLOR_SERVICE, 
                              PiVisConstants.IMAGE_BYTE_SIZE)
     elif mode == "gray":
-        client = PiVisClient(scheduler, 
+        client = PiVisClient(clientScheduler, 
                              PiVisConstants.GRAYSCALE_SERVICE, 
                              PiVisConstants.GRAYSCALE_IMAGE_BYTE_SIZE)        
-    gui = PiVisGui(scheduler, client, mode)
-    schedThread.start()
+    gui = PiVisGui(guiScheduler, client, mode)
+    guiSchedThread.start()
+    clientSchedThread.start()
     gui.tkInterMain()
-    schedThread.stop()
+    guiSchedThread.stop()
