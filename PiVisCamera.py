@@ -25,6 +25,6 @@ class PiVisCamera:
 if __name__ == "__main__":
     print("PiVisCamera starting")
     scheduler = PiVisScheduler()
-    server = PiVisServer(scheduler, PiVisConstants.COLOR_SERVICE)    
+    server = PiVisServer(scheduler, PiVisConstants.RAW_IMAGE_SERVICE)    
     camera = PiVisCamera(scheduler, server, PiVisConstants.IMAGE_RESOLUTION)
     scheduler.run()

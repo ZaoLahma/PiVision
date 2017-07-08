@@ -31,9 +31,9 @@ class PiVisGrayScaleServer:
 if __name__ == "__main__":
     scheduler = PiVisScheduler()
     client = PiVisClient(scheduler, 
-                         PiVisConstants.COLOR_SERVICE, 
+                         PiVisConstants.RAW_IMAGE_SERVICE, 
                          PiVisConstants.IMAGE_BYTE_SIZE)
-    server = PiVisServer(scheduler, PiVisConstants.GRAYSCALE_SERVICE)
+    server = PiVisServer(scheduler, PiVisConstants.IMAGE_DATA_SERVICE)
     grayScaleServer = PiVisGrayScaleServer(scheduler, client, server)
     
     scheduler.run()

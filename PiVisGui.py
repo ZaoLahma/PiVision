@@ -111,11 +111,11 @@ if __name__ == "__main__":
     mode = sys.argv[1]
     if mode == "color":
         client = PiVisClient(clientScheduler, 
-                             PiVisConstants.COLOR_SERVICE, 
+                             PiVisConstants.RAW_IMAGE_SERVICE, 
                              PiVisConstants.IMAGE_BYTE_SIZE)
     elif mode == "gray":
         client = PiVisClient(clientScheduler, 
-                             PiVisConstants.GRAYSCALE_SERVICE, 
+                             PiVisConstants.IMAGE_DATA_SERVICE, 
                              PiVisConstants.GRAYSCALE_IMAGE_BYTE_SIZE)        
     gui = PiVisGui(guiScheduler, client, mode)
     guiSchedThread.start()

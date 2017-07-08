@@ -7,10 +7,10 @@ class PiVisClient:
     def __init__(self, scheduler, portNo, imageSize):
         self.serviceNo = -1
         self.portNo = portNo
-        if self.portNo == PiVisConstants.COLOR_SERVICE:
-            self.serviceNo = PiVisConstants.DISCOVER_COLOR_SERVICE
-        elif self.portNo == PiVisConstants.GRAYSCALE_SERVICE:
-            self.serviceNo = PiVisConstants.DISCOVER_GRAY_SERVICE
+        if self.portNo == PiVisConstants.RAW_IMAGE_SERVICE:
+            self.serviceNo = PiVisConstants.DISCOVER_RAW_IMAGE_SERVICE
+        elif self.portNo == PiVisConstants.IMAGE_DATA_SERVICE:
+            self.serviceNo = PiVisConstants.DISCOVER_IMAGE_DATA_SERVICE
         self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)     
         self.serviceDiscoverySocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         self.serviceDiscoverySocket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
