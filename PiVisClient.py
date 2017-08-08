@@ -17,7 +17,6 @@ class PiVisClient:
         self.piVisServerAddress = ""
         self.imageSize = imageSize
         self.data = []
-        self.receiveBuf = []
         scheduler.registerRunnable(self.run)
     
     def findService(self):
@@ -53,38 +52,35 @@ class PiVisClient:
     def getData(self):
         retVal = self.data
         return retVal
+    
+    def __receiveInternal(self, numBytes):
+        data = []
+        while len(data) < numBytes:
+            try:
+                packet = self.serverSocket.recv(numBytes - len(data))
+                if not packet:
+                    continue
+                data += packet
+            except socket.timeout:
+                pass
+        return data       
         
     def receive(self):
         headerSize = 9 #1 byte image type, 4 bytes image size, 2 bytes xSize, 2 bytes ySize
-        header = []
-        while len(header) < headerSize:
-            try:
-                packet = self.serverSocket.recv(headerSize - len(header))
-                if not packet:
-                    continue
-                header += packet
-            except socket.timeout:
-                pass 
+
+        header = self.__receiveInternal(headerSize)
 
         imageSize = bytearray(header[1:5])
         imageSize = struct.unpack("<L", imageSize)[0]
 
         imageType = header[0:1]
         
-        while len(self.receiveBuf) < imageSize:
-            try:
-                packet = self.serverSocket.recv(imageSize - len(self.receiveBuf))
-                if not packet:
-                    continue
-                self.receiveBuf += packet
-            except socket.timeout:
-                pass
-            
+        receiveBuf = self.__receiveInternal(imageSize)
+        
         tmpBuf = []
         tmpBuf += imageType
-        tmpBuf += self.receiveBuf       
+        tmpBuf += receiveBuf    
         self.data = tmpBuf
-        self.receiveBuf = []
         
     def send(self, data):
         self.serverSocket.sendall(data)
