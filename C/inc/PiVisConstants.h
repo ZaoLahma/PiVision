@@ -3,8 +3,11 @@
 
 #include <netinet/in.h>
 
-#define COLOR_IMAGE_SIZE (640 * 480 * 3)
-#define GRAYSCALE_IMAGE_SIZE (640 * 480)
+#define IMAGE_X_SIZE     (640)
+#define IMAGE_Y_SIZE     (480)
+
+#define COLOR_IMAGE_SIZE     ((IMAGE_X_SIZE) * (IMAGE_Y_SIZE) * 3)
+#define GRAYSCALE_IMAGE_SIZE ((IMAGE_X_SIZE) * (IMAGE_Y_SIZE))
 
 #define IP_ADDRESS_LENGTH INET_ADDRSTRLEN
 

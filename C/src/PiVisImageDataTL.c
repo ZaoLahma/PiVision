@@ -4,7 +4,15 @@
 #include "../inc/PiVisScheduler.h"
 #include <string.h>
 
-#define ACK_BUF_SIZE 1
+#define ACK_BUF_SIZE    1u
+
+#define IMAGE_TYPE_HEADER_OFFSET   0u
+#define IMAGE_SIZE_HEADER_OFFSET   1u
+#define IMAGE_X_SIZE_HEADER_OFFSET 5u
+#define IMAGE_Y_SIZE_HEADER_OFFSET 7u
+#define BUF_HEADER_SIZE            9u /* 1 + 4 + 2 + 2 */
+#define GRAY_SCALE_IMAGE_HEADER    0x0
+#define COLOR_IMAGE_HEADER         0x1
 
 enum PiVisImageDataTLState
 {
@@ -54,12 +62,25 @@ void IMGDATATL_init(void)
 	frameNo = 0;
 }
 
-void IMGDATATL_send(char* buf, unsigned int size)
+void IMGDATATL_sendGrayscaleImage(char* buf, unsigned int size, unsigned short xSize, unsigned short ySize)
 {
 	//TODO: Fill header with relevant data before sending
+
 	if(SEND_DATA == state)
 	{
-		int sendStatus = SERVER_send(&serverContext, buf, size);
+		const unsigned int totSize = BUF_HEADER_SIZE + size;
+		char bufToSend[totSize];
+		memset(bufToSend, 0, sizeof(bufToSend));
+
+		bufToSend[IMAGE_TYPE_HEADER_OFFSET] = GRAY_SCALE_IMAGE_HEADER;
+
+		(void) memcpy(&bufToSend[IMAGE_SIZE_HEADER_OFFSET],   &size,  sizeof(size));
+		(void) memcpy(&bufToSend[IMAGE_X_SIZE_HEADER_OFFSET], &xSize, sizeof(xSize));
+		(void) memcpy(&bufToSend[IMAGE_Y_SIZE_HEADER_OFFSET], &xSize, sizeof(ySize));
+
+		(void) memcpy(&bufToSend[BUF_HEADER_SIZE], buf, size);
+
+		int sendStatus = SERVER_send(&serverContext, bufToSend, totSize);
 
 		if(-1 != sendStatus)
 		{

@@ -1,16 +1,14 @@
 #!/usr/bin/python
 
 import socket
+import struct
 import PiVisConstants
 
 class PiVisClient:
     def __init__(self, scheduler, portNo, imageSize):
         self.serviceNo = -1
         self.portNo = portNo
-        if self.portNo == PiVisConstants.RAW_IMAGE_SERVICE:
-            self.serviceNo = PiVisConstants.DISCOVER_RAW_IMAGE_SERVICE
-        elif self.portNo == PiVisConstants.IMAGE_DATA_SERVICE:
-            self.serviceNo = PiVisConstants.DISCOVER_IMAGE_DATA_SERVICE
+        self.serviceNo = PiVisConstants.DISCOVER_IMAGE_DATA_SERVICE
         self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)     
         self.serviceDiscoverySocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         self.serviceDiscoverySocket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
@@ -50,23 +48,42 @@ class PiVisClient:
             self.stateIndex = self.stateIndex + 1
             
     def connected(self):
-        self.receive(self.imageSize)
+        self.receive()
         
     def getData(self):
         retVal = self.data
         return retVal
         
-    def receive(self, numBytes):
-        while len(self.receiveBuf) < numBytes:
+    def receive(self):
+        headerSize = 9 #1 byte image type, 4 bytes image size, 2 bytes xSize, 2 bytes ySize
+        header = []
+        while len(header) < headerSize:
             try:
-                packet = self.serverSocket.recv(numBytes - len(self.receiveBuf))
+                packet = self.serverSocket.recv(headerSize - len(header))
                 if not packet:
-                    break
+                    continue
+                header += packet
+            except socket.timeout:
+                pass 
+
+        imageSize = bytearray(header[1:5])
+        imageSize = struct.unpack("<L", imageSize)[0]
+
+        imageType = header[0:1]
+        
+        while len(self.receiveBuf) < imageSize:
+            try:
+                packet = self.serverSocket.recv(imageSize - len(self.receiveBuf))
+                if not packet:
+                    continue
                 self.receiveBuf += packet
             except socket.timeout:
-                pass  
-        
-        self.data = self.receiveBuf
+                pass
+            
+        tmpBuf = []
+        tmpBuf += imageType
+        tmpBuf += self.receiveBuf       
+        self.data = tmpBuf
         self.receiveBuf = []
         
     def send(self, data):

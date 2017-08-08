@@ -74,7 +74,7 @@ static void run(void)
 
 		//(void) printf("Num diffs found: %u\n", numDiffs);
 
-		IMGDATATL_send(imageToSend, (GRAYSCALE_IMAGE_SIZE));
+		IMGDATATL_sendGrayscaleImage(imageToSend, (GRAYSCALE_IMAGE_SIZE), (IMAGE_X_SIZE), (IMAGE_Y_SIZE));
 	}
 }
 
