@@ -105,6 +105,8 @@ static void* imageDifferFunc(void* arg)
 
 	algoContext->state = ALGO_COMPLETE;
 
+	(void) printf("Algo complete\n");
+
 	return 0;
 }
 
@@ -116,7 +118,6 @@ static void run(void)
 									 algoControlContext.algorithms[0].outputDataSize,
 									 (IMAGE_X_SIZE),
 									 (IMAGE_Y_SIZE));
-
 	}
 
 	if((COLOR_IMAGE_SIZE) == IMGPROVIDER_getPixelData(recBuffer, (COLOR_IMAGE_SIZE)))
@@ -127,6 +128,12 @@ static void run(void)
 			algoControlContext.algorithms[0].inputData = recBuffer;
 
 			sched_job(threadContext, imageDifferFunc, &algoControlContext.algorithms[0]);
+
+			(void) printf("Algo running\n");
+		}
+		else
+		{
+			(void) printf("Dropping frame from camera\n");
 		}
 	}
 }
