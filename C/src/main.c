@@ -1,6 +1,6 @@
 #include "../inc/PiVisScheduler.h"
 #include "../inc/PiVisClient.h"
-#include "../inc/PiVisImageDiffer.h"
+#include "../inc/PiVisAlgoCtrl.h"
 #include "../inc/PiVisServer.h"
 #include "../inc/PiVisDiag.h"
 #include "../inc/PiVisImageProvider.h"
@@ -15,7 +15,7 @@ int main(void)
 
 	SERVER_init();
 
-	IMAGEDIFF_init();
+	ALGOCTRL_init();
 
 	DIAG_init();
 
