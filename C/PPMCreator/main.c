@@ -18,7 +18,10 @@ int main(void)
   for(; testImageIndex < TEST_IMAGE_BYTE_SIZE; ++testImageIndex)
   {
     testImageData[testImageIndex] = pixelVal;
-    pixelVal += 1u;
+    if(0u == (testImageIndex % TEST_IMAGE_X_SIZE))
+    {
+      pixelVal += 1u;      
+    }
   }
 
   PPMCREATOR_createGrayscaleImage(TEST_IMAGE_X_SIZE,
