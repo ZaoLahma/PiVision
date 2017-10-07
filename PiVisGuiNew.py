@@ -38,7 +38,7 @@ class PiVisGui():
         self.image = PhotoImage(width=self.resolution[0], height=self.resolution[1])
         self.canvas.create_image((self.resolution[0]/2, self.resolution[1]/2), image=self.image, state="normal")
 
-        self.blackbutton = Button(self.bottomframe, text="Black", fg="black")
+        self.blackbutton = Button(self.bottomframe, text="Disconnect", command=self.onClick)
         self.blackbutton.pack( side = BOTTOM)
 
         self.root.protocol("WM_DELETE_WINDOW", self.onClose)
@@ -112,6 +112,11 @@ class PiVisGui():
             self.frameNo += 1
             if self.frameNo > 255:
                 self.frameNo = 0
+
+    def onClick(self):
+        print("Clickety!")
+        self.clientScheduler.stop()
+        self.guiScheduler.stop()
 
     def onClose(self):
         self.guiScheduler.stop()
