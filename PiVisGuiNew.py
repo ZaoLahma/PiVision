@@ -3,6 +3,7 @@ import threading
 import PiVisConstants
 from PiVisScheduler import PiVisScheduler
 from PiVisClient import PiVisClient
+import time
 
 GRAY_SCALE_IMAGE_TYPE = 0
 COLOR_IMAGE_TYPE      = 1
@@ -25,6 +26,11 @@ class PiVisGui():
         self.client = client
         self.frameNo = 0
 
+        self.resolution = PiVisConstants.IMAGE_RESOLUTION
+
+        self.hexImage = [None] * self.resolution[1]
+        self.hexRow = [None] * (self.resolution[0] + 2)
+
         self.root = Tk()
         self.frame = Frame(self.root)
         self.frame.pack()
@@ -32,7 +38,6 @@ class PiVisGui():
         self.bottomframe = Frame(self.root)
         self.bottomframe.pack( side = BOTTOM )
 
-        self.resolution = PiVisConstants.IMAGE_RESOLUTION
         self.canvas = Canvas(self.frame, width=self.resolution[0], height=self.resolution[1], bg="#000000")
         self.canvas.pack( side = TOP )
         self.image = PhotoImage(width=self.resolution[0], height=self.resolution[1])
@@ -48,21 +53,24 @@ class PiVisGui():
     def showGrayScaleImage(self, image):
         x = 0
         y = 0
-        hexImage = []
-        hexRow = []
-        hexRow.append('{')
+        self.hexRow[x] = '{'
 
+        now = time.time()
         for byte in image:
-            hexRow.append("#%02x%02x%02x " % (byte, byte, byte))
+            self.hexRow[x + 1] = ("#%02x%02x%02x " % (byte, byte, byte))
             x += 1
             if x == self.resolution[0]:
-                hexRow.append('}')
-                hexImage.append(''.join(hexRow))
-                hexRow = []
-                hexRow.append(' {')
+                self.hexRow[x + 1] = '}'
+                #print(self.hexRow)
+                self.hexImage[y] = ''.join(self.hexRow)
                 x = 0
+                self.hexRow[x] = ' {'
                 y += 1
-        self.image.put(''.join(hexImage), to=(0, 0, self.resolution[0], self.resolution[1]))
+        later = time.time()
+        print("Frame took: " + str(later - now))
+        self.image.put(''.join(self.hexImage), to=(0, 0, self.resolution[0], self.resolution[1]))
+        after = time.time()
+        print("Printing image took: " + str(after - later))
 
     def showImage(self, image):
         byteOffset = 0
