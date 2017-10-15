@@ -28,10 +28,10 @@ class PiVisGui():
 
         self.resolution = PiVisConstants.IMAGE_RESOLUTION
 
-        pygame.init ()
-        pygame.display.set_mode((self.resolution[0], self.resolution[1]))
+        pygame.init()
+        pygame.display.set_mode((self.resolution[0], self.resolution[1]), pygame.HWSURFACE)
         self.surface = pygame.Surface ((self.resolution[0], self.resolution[1]))
-        pygame.display.flip ()
+        pygame.display.flip()
 
         guiScheduler.registerRunnable(self.run)
 
@@ -52,11 +52,12 @@ class PiVisGui():
 
         screen = pygame.display.get_surface()
         screen.blit (self.surface, (0, 0))
-        pygame.display.flip ()
+        pygame.display.update()
+        pygame.display.flip()
 
         after = time.time()
 
-        #print("Printing image took: " + str(now - after))
+        print("Printing image took: " + str(now - after))
 
     def run(self):
         image = self.client.getData()
