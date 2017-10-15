@@ -1,4 +1,4 @@
-from tkinter import *
+import pygame
 import threading
 import PiVisConstants
 from PiVisScheduler import PiVisScheduler
@@ -28,84 +28,35 @@ class PiVisGui():
 
         self.resolution = PiVisConstants.IMAGE_RESOLUTION
 
-        self.hexImage = [None] * self.resolution[1]
-        self.hexRow = [None] * (self.resolution[0] + 2)
-
-        self.root = Tk()
-        self.frame = Frame(self.root)
-        self.frame.pack()
-
-        self.bottomframe = Frame(self.root)
-        self.bottomframe.pack( side = BOTTOM )
-
-        self.canvas = Canvas(self.frame, width=self.resolution[0], height=self.resolution[1], bg="#000000")
-        self.canvas.pack( side = TOP )
-        self.image = PhotoImage(width=self.resolution[0], height=self.resolution[1])
-        self.canvas.create_image((self.resolution[0]/2, self.resolution[1]/2), image=self.image, state="normal")
-
-        self.blackbutton = Button(self.bottomframe, text="Disconnect", command=self.onClick)
-        self.blackbutton.pack( side = BOTTOM)
-
-        self.root.protocol("WM_DELETE_WINDOW", self.onClose)
+        pygame.init ()
+        pygame.display.set_mode((self.resolution[0], self.resolution[1]))
+        self.surface = pygame.Surface ((self.resolution[0], self.resolution[1]))
+        pygame.display.flip ()
 
         guiScheduler.registerRunnable(self.run)
 
     def showGrayScaleImage(self, image):
         x = 0
         y = 0
-        self.hexRow[x] = '{'
 
         now = time.time()
+        ar = pygame.PixelArray(self.surface)
         for byte in image:
-            self.hexRow[x + 1] = ("#%02x%02x%02x " % (byte, byte, byte))
+            #print("Byte: " + hex(byte))
+            ar[x, y] = (byte, byte, byte)
             x += 1
             if x == self.resolution[0]:
-                self.hexRow[x + 1] = '}'
-                #print(self.hexRow)
-                self.hexImage[y] = ''.join(self.hexRow)
-                x = 0
-                self.hexRow[x] = ' {'
                 y += 1
-        later = time.time()
-        print("Frame took: " + str(later - now))
-        self.image.put(''.join(self.hexImage), to=(0, 0, self.resolution[0], self.resolution[1]))
+                x = 0
+        del ar
+
+        screen = pygame.display.get_surface()
+        screen.blit (self.surface, (0, 0))
+        pygame.display.flip ()
+
         after = time.time()
-        print("Printing image took: " + str(after - later))
 
-    def showImage(self, image):
-        byteOffset = 0
-        byteCounter = 0
-        x = 0
-        y = 0
-        R = 0
-        G = 0
-        B = 0
-        hexImage = []
-        hexRow = []
-        hexRow.append('{')
-
-        for byte in image:
-            byteCounter += 1
-            if 0 == byteOffset:
-                R = byte
-            elif 1 == byteOffset:
-                G = byte
-            elif 2 == byteOffset:
-                B = byte
-
-            byteOffset += 1
-            if 3 == byteOffset:
-                byteOffset = 0
-                hexRow.append("#%02x%02x%02x " % (R, G, B))
-                x += 1
-                if x == self.resolution[0]:
-                    hexRow.append('}')
-                    hexImage.append(''.join(hexRow))
-                    hexRow = []
-                    hexRow.append(' {')
-                    x = 0
-                    y += 1
-        self.image.put(''.join(hexImage), to=(0, 0, self.resolution[0], self.resolution[1]))
+        #print("Printing image took: " + str(now - after))
 
     def run(self):
         image = self.client.getData()
@@ -121,18 +72,15 @@ class PiVisGui():
             if self.frameNo > 255:
                 self.frameNo = 0
 
-    def onClick(self):
-        print("Clickety!")
-        self.clientScheduler.stop()
-        self.guiScheduler.stop()
-
-    def onClose(self):
-        self.guiScheduler.stop()
-        self.clientScheduler.stop()
-        self.root.destroy()
 
     def mainLoop(self):
-        self.root.mainloop()
+        print("Mainloop running")
+        while 1:
+            event = pygame.event.wait ()
+            if event.type == pygame.QUIT:
+                self.clientScheduler.stop()
+                self.guiScheduler.stop()
+                raise SystemExit
 
 if __name__ == "__main__":
     guiScheduler = PiVisScheduler()
