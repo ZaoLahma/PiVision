@@ -1,6 +1,6 @@
-#include "../inc/PiVisClient.h"
-#include "../inc/PiVisScheduler.h"
-#include "../inc/PiVisConstants.h"
+#include "PiVisClient.h"
+#include "PiVisScheduler.h"
+#include "PiVisConstants.h"
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>

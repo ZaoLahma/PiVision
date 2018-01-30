@@ -1,7 +1,7 @@
-#include "../inc/PiVisImageProvider.h"
-#include "../inc/PiVisScheduler.h"
-#include "../inc/PiVisConstants.h"
-#include "../inc/PiVisClient.h"
+#include "PiVisImageProvider.h"
+#include "PiVisScheduler.h"
+#include "PiVisConstants.h"
+#include "PiVisClient.h"
 #include <string.h>
 #include <stdio.h>
 

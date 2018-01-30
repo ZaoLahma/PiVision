@@ -1,7 +1,7 @@
-#include "../inc/PiVisImageDataTL.h"
-#include "../inc/PiVisServer.h"
-#include "../inc/PiVisConstants.h"
-#include "../inc/PiVisScheduler.h"
+#include "PiVisImageDataTL.h"
+#include "PiVisServer.h"
+#include "PiVisConstants.h"
+#include "PiVisScheduler.h"
 #include <string.h>
 
 #define ACK_BUF_SIZE    1u

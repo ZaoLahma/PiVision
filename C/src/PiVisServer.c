@@ -1,6 +1,6 @@
-#include "../inc/PiVisServer.h"
-#include "../inc/PiVisScheduler.h"
-#include "../inc/PiVisConstants.h"
+#include "PiVisServer.h"
+#include "PiVisScheduler.h"
+#include "PiVisConstants.h"
 #include <stdio.h>
 #include <sys/types.h>
 #include <ifaddrs.h>

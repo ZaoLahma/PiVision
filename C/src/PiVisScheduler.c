@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../inc/PiVisScheduler.h"
+#include "PiVisScheduler.h"
 
 static SchdRunFuncEntry* registeredFuncs;
 static int running;

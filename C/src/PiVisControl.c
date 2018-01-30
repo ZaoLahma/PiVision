@@ -1,6 +1,6 @@
-#include "../inc/PiVisControl.h"
-#include "../inc/PiVisScheduler.h"
-#include "../inc/PiVisServer.h"
+#include "PiVisControl.h"
+#include "PiVisScheduler.h"
+#include "PiVisServer.h"
 #include <stdio.h>
 
 #define CONTROL_PORT_NO (4444)
