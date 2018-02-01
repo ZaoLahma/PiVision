@@ -29,13 +29,17 @@ void IMGPROVIDER_init(void)
 
 int IMGPROVIDER_getPixelData(char* buf, unsigned int bufSize)
 {
-	unsigned int bytesToCopy = bufSize;
+	unsigned int bytesToCopy = 0u;
 
-	if(bufSize > recBufferSize)
-	{
-		bytesToCopy = recBufferSize;
-	}
-	(void) memcpy(buf, recBuffer, bytesToCopy);
+  if(recBufferSize != 0u)
+  {
+    bytesToCopy = bufSize;
+  	if(bufSize > recBufferSize)
+  	{
+  		bytesToCopy = recBufferSize;
+  	}
+  	(void) memcpy(buf, recBuffer, bytesToCopy);
+  }
 
 	return bytesToCopy;
 }

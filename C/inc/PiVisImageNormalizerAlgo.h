@@ -1,0 +1,6 @@
+#ifndef HEADER_IMAGE_NORMALIZER_ALGO
+#define HEADER_IMAGE_NORMALIZER_ALGO
+
+void* IMGNORMALGO_exec(void* arg);
+
+#endif

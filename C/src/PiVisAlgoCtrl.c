@@ -4,12 +4,13 @@
 #include "PiVisImageProvider.h"
 #include "PiVisImageDataTL.h"
 #include "PiVisImageDiffAlgo.h"
+#include "PiVisImageNormalizerAlgo.h"
 #include "external/thread_pool.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 
-#define NUM_ALGORITHMS 1u
+#define NUM_ALGORITHMS (2u)
 
 typedef struct
 {
@@ -42,7 +43,7 @@ static void run(void)
 
 			sched_job(threadContext, algoControlContext.algorithms[0].exec, &algoControlContext.algorithms[0]);
 
-			(void) printf("Algo running\n");
+			(void) printf("Normalizing running\n");
 		}
 		else
 		{
@@ -51,7 +52,6 @@ static void run(void)
 	}
 }
 
-
 void ALGOCTRL_init(void)
 {
 	funcEntry.run = run;
@@ -59,8 +59,11 @@ void ALGOCTRL_init(void)
 
 	SCHED_registerCallback(&funcEntry);
 
-	algoControlContext.algorithms[0].state = ALGO_INIT;
-  algoControlContext.algorithms[0].exec = &IMGDIFFALGO_exec;
+  algoControlContext.algorithms[0].state = ALGO_INIT;
+  algoControlContext.algorithms[0].exec = &IMGNORMALGO_exec;
+
+	algoControlContext.algorithms[1].state = ALGO_INIT;
+  algoControlContext.algorithms[1].exec = &IMGDIFFALGO_exec;
 
 	threadContext = init_thread_pool((NUM_ALGORITHMS));
 }
