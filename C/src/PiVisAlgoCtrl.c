@@ -42,8 +42,6 @@ static void run(void)
 			algoControlContext.algorithms[0].inputData = recBuffer;
 
 			sched_job(threadContext, algoControlContext.algorithms[0].exec, &algoControlContext.algorithms[0]);
-
-			(void) printf("Normalizing running\n");
 		}
 		else
 		{

@@ -50,23 +50,23 @@ static void createGrayscaleImage(char* colorImage)
 
 static void normalizeImage(void)
 {
+  unsigned int normalizingFactor = (255 / (maxIntensity - minIntensity));
   unsigned int bufIndex = 0u;
   for(; bufIndex < (GRAYSCALE_IMAGE_SIZE); ++bufIndex)
   {
-
+    normalizedImage[bufIndex] = (grayscaleImage[bufIndex] - minIntensity) * normalizingFactor;
   }
 }
 
 void* IMGNORMALGO_exec(void* arg)
 {
-  (void) printf("Normalizing image\n");
-
   PiVisAlgoContext* algoContext = (PiVisAlgoContext*)(arg);
-  algoContext->outputData = grayscaleImage;
-  algoContext->outputDataSize = (GRAYSCALE_IMAGE_SIZE);
 
   createGrayscaleImage(algoContext->inputData);
   normalizeImage();
+
+  algoContext->outputData = normalizedImage;
+  algoContext->outputDataSize = (GRAYSCALE_IMAGE_SIZE);
 
   maxIntensity = 0u;
   minIntensity = 255u;
