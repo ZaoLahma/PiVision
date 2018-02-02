@@ -27,7 +27,7 @@ void IMGPROVIDER_init(void)
 	SCHED_registerCallback(&funcEntry);
 }
 
-int IMGPROVIDER_getPixelData(char* buf, unsigned int bufSize)
+int IMGPROVIDER_getPixelData(unsigned char* buf, unsigned int bufSize)
 {
 	unsigned int bytesToCopy = 0u;
 

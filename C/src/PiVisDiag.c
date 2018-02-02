@@ -16,9 +16,9 @@ static void run(void)
 	if(serverContext.connected)
 	{
 		unsigned int droppedFrames = IMGDATATL_getNumDroppedFrames();
-		char toSend[7] = "";
-		sprintf(toSend, "%u\r\n", droppedFrames);
-		SERVER_send(&serverContext, toSend, strlen(toSend));
+		unsigned char toSend[7] = "";
+		sprintf((char*)toSend, "%u\r\n", droppedFrames);
+		SERVER_send(&serverContext, toSend, strlen((char*)toSend));
 	}
 }
 

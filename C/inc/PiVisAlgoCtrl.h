@@ -13,8 +13,8 @@ typedef void* (*AlgoExecFunc)(void*);
 typedef struct
 {
 	PiVisAlgoState state;
-	char* inputData;
-	char* outputData;
+	unsigned char* inputData;
+	unsigned char* outputData;
 	unsigned int outputDataSize;
   AlgoExecFunc exec;
 } PiVisAlgoContext;

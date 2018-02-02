@@ -6,8 +6,8 @@
 #include <string.h>
 
 static unsigned char receivedFirstImage = 0u;
-static char prevBuffer[(COLOR_IMAGE_SIZE)];
-static char imageToSend[(GRAYSCALE_IMAGE_SIZE)];
+static unsigned char prevBuffer[(COLOR_IMAGE_SIZE)];
+static unsigned char imageToSend[(GRAYSCALE_IMAGE_SIZE)];
 
 void* IMGDIFFALGO_exec(void* arg)
 {

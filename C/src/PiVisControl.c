@@ -19,7 +19,7 @@ typedef struct CommandHeader_
 static SchdRunFuncEntry funcEntry;
 static PiVisServerContext serverContext;
 
-static char commandBuf[(COMMAND_BUF_LEN)];
+static unsigned char commandBuf[(COMMAND_BUF_LEN)];
 
 static void run(void);
 

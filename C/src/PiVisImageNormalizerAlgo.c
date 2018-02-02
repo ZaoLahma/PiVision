@@ -7,19 +7,19 @@
 
 #define U8_MAX (0xFFu)
 #define IMAGE_FILTER_HIGH (240)
-#define IMAGE_FILTER_LOW  (10)
+#define IMAGE_FILTER_LOW  (20)
 
-static char grayscaleImage[(GRAYSCALE_IMAGE_SIZE)];
-static char normalizedImage[(GRAYSCALE_IMAGE_SIZE)];
-static int maxIntensity = 0u;
-static int minIntensity = 255u;
-static int averageIntensity = 0u;
-static int standardDeviation = 0u;
+static unsigned char grayscaleImage[(GRAYSCALE_IMAGE_SIZE)];
+static unsigned char normalizedImage[(GRAYSCALE_IMAGE_SIZE)];
+static unsigned int maxIntensity = 0u;
+static unsigned int minIntensity = 255u;
+static unsigned int averageIntensity = 0u;
+static unsigned int standardDeviation = 0u;
 
-static void createGrayscaleImage(char* colorImage);
+static void createGrayscaleImage(unsigned char* colorImage);
 static void normalizeImage(void);
 
-static void createGrayscaleImage(char* colorImage)
+static void createGrayscaleImage(unsigned char* colorImage)
 {
   unsigned int colorIndex = 0u;
   unsigned int colorIntensity = 0u;
@@ -47,7 +47,7 @@ static void createGrayscaleImage(char* colorImage)
 static void normalizeImage(void)
 {
   unsigned int bufIndex = 0u;
-  int colorIntensity = 0u;
+  unsigned char colorIntensity = 0u;
   for(; bufIndex < (GRAYSCALE_IMAGE_SIZE); ++bufIndex)
   {
     colorIntensity = grayscaleImage[bufIndex];

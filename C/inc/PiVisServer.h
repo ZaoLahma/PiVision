@@ -19,7 +19,7 @@ typedef struct PiVisServerContext_
 
 void SERVER_init(void);
 void SERVER_publishService(PiVisServerContext* context);
-int SERVER_send(PiVisServerContext* context, char* buf, unsigned int size);
-int SERVER_receive(PiVisServerContext* context, char* buf, unsigned int bufSize);
+int SERVER_send(PiVisServerContext* context, unsigned char* buf, unsigned int size);
+int SERVER_receive(PiVisServerContext* context, unsigned char* buf, unsigned int bufSize);
 
 #endif

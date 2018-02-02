@@ -32,7 +32,7 @@ static void run(void);
 
 static void run(void)
 {
-	int receivedBytes = SERVER_receive(&serverContext, (char*)&ackBuf, (ACK_BUF_SIZE));
+	int receivedBytes = SERVER_receive(&serverContext, (unsigned char*)&ackBuf, (ACK_BUF_SIZE));
 
 	if(-1 != receivedBytes)
 	{
@@ -62,14 +62,14 @@ void IMGDATATL_init(void)
 	frameNo = 0;
 }
 
-void IMGDATATL_sendGrayscaleImage(char* buf, unsigned int size, unsigned short xSize, unsigned short ySize)
+void IMGDATATL_sendGrayscaleImage(unsigned char* buf, unsigned int size, unsigned short xSize, unsigned short ySize)
 {
 	//TODO: Fill header with relevant data before sending
 
 	if(SEND_DATA == state)
 	{
 		const unsigned int totSize = BUF_HEADER_SIZE + size;
-		char bufToSend[totSize];
+		unsigned char bufToSend[totSize];
 		memset(bufToSend, 0, sizeof(bufToSend));
 
 		bufToSend[IMAGE_TYPE_HEADER_OFFSET] = GRAY_SCALE_IMAGE_HEADER;

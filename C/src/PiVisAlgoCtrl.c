@@ -20,7 +20,7 @@ typedef struct
 static PiVisAlgoControlContext algoControlContext;
 static SchdRunFuncEntry funcEntry;
 static struct ThreadContext* threadContext;
-static char recBuffer[(COLOR_IMAGE_SIZE)];
+static unsigned char recBuffer[(COLOR_IMAGE_SIZE)];
 
 static void run(void);
 

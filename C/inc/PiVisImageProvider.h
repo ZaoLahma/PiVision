@@ -3,6 +3,6 @@
 
 void IMGPROVIDER_init(void);
 
-int IMGPROVIDER_getPixelData(char* buf, unsigned int bufSize);
+int IMGPROVIDER_getPixelData(unsigned char* buf, unsigned int bufSize);
 
 #endif
