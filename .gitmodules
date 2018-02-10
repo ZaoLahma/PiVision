@@ -1,0 +1,3 @@
+[submodule "C++/ThreadFramework"]
+	path = C++/ThreadFramework
+	url = https://github.com/ZaoLahma/ThreadFramework.git
