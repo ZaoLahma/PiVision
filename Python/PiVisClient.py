@@ -33,7 +33,9 @@ class PiVisClient:
             raise
         else:
             self.serviceDiscoverySocket.close()
-            self.piVisServerAddress = str(address, 'utf-8').split('\x00')[0]
+            self.piVisServerAddress = str(address, 'utf-8').split('\x00')
+            if len(self.piVisServerAddress):
+                self.piVisServerAddress = self.piVisServerAddress[0]
             print("PiVisServer service found at " + self.piVisServerAddress)
             self.stateIndex += 1
 
