@@ -152,11 +152,11 @@ void PiVisionEthTermConnectServiceJob::Execute()
   {
     JobDispatcher::GetApi()->Log("Service found");
     if(-1 != (socketFd = ConnectToServer()))
-  	{
+    {
       PiVisionServiceStatus status = PiVisionServiceStatus::SERVICE_CONNECTED;
       serviceStatusInd = std::make_shared<PiVisionServiceStatusInd>(status, serviceNo);
       JobDispatcher::GetApi()->Log("PiVision connected to camera");
-  	}
+    }
     else
     {
       JobDispatcher::GetApi()->Log("Failed to connect to service");
