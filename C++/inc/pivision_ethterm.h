@@ -6,12 +6,13 @@
 
 #include "jobbase.h"
 #include "eventlistenerbase.h"
+#include "pivision_image_constants.h"
 
 class PiVisionEthTermConnectServiceJob : public JobBase, public EventListenerBase
 {
 private:
   PiVisionEthTermConnectServiceJob();
-  void TryConnect();
+  void FindService();
   int32_t ConnectToServer();
   const uint32_t serviceNo;
   const std::string serviceDiscoveryHeader;
@@ -28,6 +29,20 @@ protected:
 
 public:
   PiVisionEthTermConnectServiceJob(const uint32_t _serviceNo);
+  void Execute();
+  void HandleEvent(const uint32_t eventNo, std::shared_ptr<EventDataBase> dataPtr);
+};
+
+class PiVisionEthTermConnectionJob : public JobBase, public EventListenerBase
+{
+private:
+  int32_t socketFd;
+  char buffer[COLOR_IMAGE_SIZE];
+
+protected:
+
+public:
+  PiVisionEthTermConnectionJob(const int32_t _socketFd);
   void Execute();
   void HandleEvent(const uint32_t eventNo, std::shared_ptr<EventDataBase> dataPtr);
 };

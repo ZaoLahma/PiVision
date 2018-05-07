@@ -1,0 +1,8 @@
+#ifndef HEADER_PIVISION_IMAGE_CONSTANTS
+#define HEADER_PIVISION_IMAGE_CONSTANTS
+
+const uint32_t IMAGE_X_SIZE     = 640;
+const uint32_t IMAGE_Y_SIZE     = 480;
+const uint32_t COLOR_IMAGE_SIZE = IMAGE_X_SIZE * IMAGE_Y_SIZE * 3;
+
+#endif

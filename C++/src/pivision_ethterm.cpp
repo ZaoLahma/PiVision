@@ -31,7 +31,7 @@ socketFd(0)
   JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_SERVICE_DISCOVERY_TIMEOUT, this);
 }
 
-void PiVisionEthTermConnectServiceJob::TryConnect(void)
+void PiVisionEthTermConnectServiceJob::FindService(void)
 {
   std::string serviceDiscoverString = serviceDiscoveryHeader + std::to_string(serviceNo);
   JobDispatcher::GetApi()->Log("serviceDiscoveryString: %s", serviceDiscoverString.c_str());
@@ -128,7 +128,7 @@ void PiVisionEthTermConnectServiceJob::Execute()
   serviceFound = false;
   while(numAttempts < maxNumAttempts)
   {
-    TryConnect();
+    FindService();
     if(!serviceFound)
     {
       numAttempts += 1u;
@@ -142,7 +142,6 @@ void PiVisionEthTermConnectServiceJob::Execute()
     else
     {
       numAttempts = maxNumAttempts;
-      serviceFound = true;
     }
   }
 
@@ -154,21 +153,21 @@ void PiVisionEthTermConnectServiceJob::Execute()
     if(-1 != (socketFd = ConnectToServer()))
     {
       PiVisionServiceStatus status = PiVisionServiceStatus::SERVICE_CONNECTED;
-      serviceStatusInd = std::make_shared<PiVisionServiceStatusInd>(status, serviceNo);
+      serviceStatusInd = std::make_shared<PiVisionServiceStatusInd>(status, serviceNo, socketFd);
       JobDispatcher::GetApi()->Log("PiVision connected to camera");
     }
     else
     {
       JobDispatcher::GetApi()->Log("Failed to connect to service");
       PiVisionServiceStatus status = PiVisionServiceStatus::SERVICE_DISCONNECTED;
-      serviceStatusInd = std::make_shared<PiVisionServiceStatusInd>(status, serviceNo);
+      serviceStatusInd = std::make_shared<PiVisionServiceStatusInd>(status, serviceNo, -1);
     }
   }
   else
   {
     JobDispatcher::GetApi()->Log("Service not found");
     PiVisionServiceStatus status = PiVisionServiceStatus::SERVICE_NOT_FOUND;
-    serviceStatusInd = std::make_shared<PiVisionServiceStatusInd>(status, serviceNo);
+    serviceStatusInd = std::make_shared<PiVisionServiceStatusInd>(status, serviceNo, -1);
   }
 
   JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_SERVICE_STATUS_IND, serviceStatusInd);
@@ -192,6 +191,48 @@ void PiVisionEthTermConnectServiceJob::HandleEvent(const uint32_t eventNo, std::
     break;
   }
 }
+
+/* ------- PiVisionEthTermConnectionJob -------  */
+
+PiVisionEthTermConnectionJob::PiVisionEthTermConnectionJob(const int32_t _socketFd) : socketFd(_socketFd)
+{
+
+}
+
+void PiVisionEthTermConnectionJob::Execute()
+{
+  (void) memset(buffer, 0, sizeof(buffer));
+
+  while(1)
+  {
+    uint32_t numBytesReceived = 0u;
+    while(numBytesReceived < COLOR_IMAGE_SIZE)
+    {
+      int32_t chunkSize = recv(socketFd,
+                               &buffer[numBytesReceived],
+                               COLOR_IMAGE_SIZE - numBytesReceived,
+                               0);
+
+      if(chunkSize > 0)
+      {
+        numBytesReceived += chunkSize;
+      }
+      else
+      {
+        break;
+      }
+    }
+    auto newFrameInd = std::make_shared<PiVisionNewFrameInd>(buffer);
+    JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_NEW_FRAME_IND, newFrameInd);
+  }
+}
+
+void PiVisionEthTermConnectionJob::HandleEvent(const uint32_t eventNo, std::shared_ptr<EventDataBase> dataPtr)
+{
+
+}
+
+/* ------- PiVisionEthTerm ------- */
 
 PiVisionEthTerm::PiVisionEthTerm()
 {
@@ -225,6 +266,8 @@ void PiVisionEthTerm::HandleEvent(const uint32_t eventNo, std::shared_ptr<EventD
         {
           std::shared_ptr<EventDataBase> connectCfm = std::make_shared<PiVisionConnectToServiceCfm>(statusInd->serviceNo);
           JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_CONNECT_TO_SERVICE_CFM, connectCfm);
+          std::shared_ptr<PiVisionEthTermConnectionJob> connectionJob = std::make_shared<PiVisionEthTermConnectionJob>(statusInd->socketFd);
+          JobDispatcher::GetApi()->ExecuteJobInGroup(connectionJob, PIVISION_CONNECTIONS_THREAD_ID);
           break;
         }
         default:

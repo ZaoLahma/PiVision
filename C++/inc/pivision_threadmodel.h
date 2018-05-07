@@ -3,5 +3,6 @@
 
 const uint32_t PIVISION_FRAMECOORD_THREAD_ID        = 0x10;
 const uint32_t PIVISION_SERVICE_DISCOVERY_THREAD_ID = 0x11;
+const uint32_t PIVISION_CONNECTIONS_THREAD_ID       = 0x12;
 
 #endif

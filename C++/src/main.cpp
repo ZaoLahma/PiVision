@@ -11,10 +11,11 @@ int main(void)
   JobDispatcher::GetApi()->Log("PiVision start");
 
   PiVisionEthTerm ethTerm;
-  PiVisionClient client;
+  PiVisionClient client(3070);
 
   JobDispatcher::GetApi()->AddExecGroup(PIVISION_FRAMECOORD_THREAD_ID, 0u);
   JobDispatcher::GetApi()->AddExecGroup(PIVISION_SERVICE_DISCOVERY_THREAD_ID, 5u);
+  JobDispatcher::GetApi()->AddExecGroup(PIVISION_CONNECTIONS_THREAD_ID, 10u);
 
   std::shared_ptr<JobBase> frameCoordJob = std::make_shared<PiVisionFrameCoord>();
 

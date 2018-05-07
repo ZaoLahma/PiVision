@@ -6,11 +6,12 @@
 class PiVisionClient : public EventListenerBase
 {
 private:
+  const uint32_t serviceNo;
 
 protected:
 
 public:
-  PiVisionClient();
+  PiVisionClient(const uint32_t _serviceNo);
   void HandleEvent(const uint32_t eventNo, std::shared_ptr<EventDataBase> dataPtr);
 
 };

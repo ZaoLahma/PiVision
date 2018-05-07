@@ -5,6 +5,7 @@
 PiVisionFrameCoord::PiVisionFrameCoord() : currFrame(0u), running(true)
 {
     JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_STOP, this);
+    JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_NEW_FRAME_IND, this);
 }
 
 void PiVisionFrameCoord::Execute()
@@ -24,6 +25,13 @@ void PiVisionFrameCoord::HandleEvent(const uint32_t eventNo,
 {
   switch(eventNo)
   {
+    case PIVISION_EVENT_NEW_FRAME_IND:
+    {
+      auto newFrameInd = std::static_pointer_cast<PiVisionNewFrameInd>(dataPtr);
+      currFrame += 1u;
+      JobDispatcher::GetApi()->Log("New frame: %u", currFrame);
+      break;
+    }
     case PIVISION_EVENT_STOP:
       running = false;
       break;
