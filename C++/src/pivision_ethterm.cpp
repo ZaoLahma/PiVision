@@ -4,13 +4,16 @@
 #include "pivision_threadmodel.h"
 
 PiVisionEthTermConnectServiceJob::PiVisionEthTermConnectServiceJob(const uint32_t _serviceNo):
-serviceNo(_serviceNo)
+serviceNo(_serviceNo),
+serviceDiscoveryHeader("WHERE_IS_")
 {
 
 }
 
 void PiVisionEthTermConnectServiceJob::Execute()
 {
+  std::string serviceDiscoverString = serviceDiscoveryHeader + std::to_string(serviceNo);
+  JobDispatcher::GetApi()->Log("serviceDiscoveryString: %s", serviceDiscoverString.c_str());
   std::shared_ptr<EventDataBase> serviceRej = std::make_shared<PiVisionConnectToServiceRej>(serviceNo);
   JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_CONNECT_TO_SERVICE_REJ, serviceRej);
 }

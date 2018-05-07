@@ -7,7 +7,7 @@ PiVisionClient::PiVisionClient()
   JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_CONNECT_TO_SERVICE_CFM, this);
   JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_CONNECT_TO_SERVICE_REJ, this);
 
-  std::shared_ptr<EventDataBase> serviceReq = std::make_shared<PiVisionConnectToServiceReq>(3070);
+  std::shared_ptr<EventDataBase> serviceReq = std::make_shared<PiVisionConnectToServiceReq>(3069);
   JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_CONNECT_TO_SERVICE_REQ, serviceReq);
 }
 

@@ -1,6 +1,8 @@
 #ifndef HEADER_PIVISION_ETHTERM
 #define HEADER_PIVISION_ETHTERM
 
+#include <string>
+
 #include "jobbase.h"
 #include "eventlistenerbase.h"
 
@@ -9,6 +11,7 @@ class PiVisionEthTermConnectServiceJob : public JobBase
 private:
   PiVisionEthTermConnectServiceJob();
   const uint32_t serviceNo;
+  const std::string serviceDiscoveryHeader;
 
 protected:
 
