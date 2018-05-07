@@ -1,6 +1,6 @@
 CCOMMAND = g++
 CFLAGS = -Wall -c -Wextra -g --std=c++11
-LINKARGS = -lpthread -lsdl2 -lsdl2_image
+LINKARGS = -lpthread
 SOURCES = $(wildcard src/*.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
 RELEASE_OBJECTS = $(RELEASE_SOURCES:.cpp=.o)
