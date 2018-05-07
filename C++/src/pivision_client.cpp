@@ -7,7 +7,7 @@ PiVisionClient::PiVisionClient()
   JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_CONNECT_TO_SERVICE_CFM, this);
   JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_CONNECT_TO_SERVICE_REJ, this);
 
-  std::shared_ptr<EventDataBase> serviceReq = std::make_shared<PiVisionConnectToServiceReq>(3069);
+  std::shared_ptr<EventDataBase> serviceReq = std::make_shared<PiVisionConnectToServiceReq>(3070);
   JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_CONNECT_TO_SERVICE_REQ, serviceReq);
 }
 
@@ -17,6 +17,8 @@ void PiVisionClient::HandleEvent(const uint32_t eventNo,
   switch(eventNo)
   {
     case PIVISION_EVENT_CONNECT_TO_SERVICE_CFM:
+      JobDispatcher::GetApi()->Log("PivisionClient connected to camera");
+      JobDispatcher::GetApi()->RaiseEventIn(PIVISION_EVENT_STOP, nullptr, 100u);
       break;
     case PIVISION_EVENT_CONNECT_TO_SERVICE_REJ:
       JobDispatcher::GetApi()->Log("Received ConnectToServiceRej. Execution aborted.");

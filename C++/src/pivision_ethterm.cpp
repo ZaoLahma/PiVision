@@ -65,8 +65,9 @@ void PiVisionEthTermConnectServiceJob::TryConnect(void)
   if(bytesReceived > 0)
   {
     serverAddressArray[bytesReceived] = '\0';
-    (void) printf("Received: %s\n", serverAddressArray);
     serverAddress = std::string(serverAddressArray);
+    JobDispatcher::GetApi()->Log("Received service address: %s",
+                                 serverAddress.c_str());
     serviceFound = true;
   }
 }
@@ -158,6 +159,7 @@ void PiVisionEthTermConnectServiceJob::Execute()
   	}
     else
     {
+      JobDispatcher::GetApi()->Log("Failed to connect to service");
       PiVisionServiceStatus status = PiVisionServiceStatus::SERVICE_DISCONNECTED;
       serviceStatusInd = std::make_shared<PiVisionServiceStatusInd>(status, serviceNo);
     }
