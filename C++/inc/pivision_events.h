@@ -1,0 +1,6 @@
+#ifndef HEADER_PIVISION_EVENTS
+#define HEADER_PIVISION_EVENTS
+
+static const uint32_t PIVISION_STOP = 0xFFFF0000;
+
+#endif
