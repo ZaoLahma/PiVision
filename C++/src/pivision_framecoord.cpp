@@ -15,6 +15,8 @@ void PiVisionFrameCoord::Execute()
   {
     /* Do clever stuff here? */
   }
+
+  JobDispatcher::GetApi()->NotifyExecutionFinished();
 }
 
 void PiVisionFrameCoord::HandleEvent(const uint32_t eventNo,
@@ -24,7 +26,6 @@ void PiVisionFrameCoord::HandleEvent(const uint32_t eventNo,
   {
     case PIVISION_EVENT_STOP:
       running = false;
-      JobDispatcher::GetApi()->NotifyExecutionFinished();
       break;
     default:
       JobDispatcher::GetApi()->Log("PiVisionFrameCoord received unexpected event: 0x%x", eventNo);

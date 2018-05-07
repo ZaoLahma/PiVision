@@ -16,6 +16,8 @@ void PiVisionClient::HandleEvent(const uint32_t eventNo,
 {
   switch(eventNo)
   {
+    case PIVISION_EVENT_CONNECT_TO_SERVICE_CFM:
+      break;
     case PIVISION_EVENT_CONNECT_TO_SERVICE_REJ:
       JobDispatcher::GetApi()->Log("Received ConnectToServiceRej. Execution aborted.");
       JobDispatcher::GetApi()->RaiseEventIn(PIVISION_EVENT_STOP, nullptr, 100u);
