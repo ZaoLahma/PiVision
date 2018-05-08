@@ -202,11 +202,12 @@ PiVisionEthTermConnectionJob::PiVisionEthTermConnectionJob(const int32_t _socket
 void PiVisionEthTermConnectionJob::Execute()
 {
   (void) memset(buffer, 0, sizeof(buffer));
+  std::string dataBuf = "";
 
   while(1)
   {
     uint32_t numBytesReceived = 0u;
-    while(numBytesReceived < COLOR_IMAGE_SIZE)
+    while(numBytesReceived < 4u)
     {
       int32_t chunkSize = recv(socketFd,
                                &buffer[numBytesReceived],
@@ -219,7 +220,31 @@ void PiVisionEthTermConnectionJob::Execute()
       }
       else
       {
-        break;
+        return;
+      }
+    }
+
+    dataBuf = std::string(buffer);
+    uint32_t payloadSize = std::stoi(dataBuf, nullptr, 10);
+
+    dataBuf = "";
+
+    numBytesReceived  = 0u;
+
+    while(numBytesReceived < payloadSize)
+    {
+      int32_t chunkSize = recv(socketFd,
+                               &buffer[numBytesReceived],
+                               payloadSize - numBytesReceived,
+                               0);
+
+      if(chunkSize > 0)
+      {
+        numBytesReceived += chunkSize;
+      }
+      else
+      {
+        return;
       }
     }
     auto newFrameInd = std::make_shared<PiVisionNewFrameInd>(buffer);
