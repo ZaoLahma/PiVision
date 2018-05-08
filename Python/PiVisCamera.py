@@ -6,17 +6,16 @@ import PiVisConstants
 import picamera
 import time
 import io
-import sys
 
 class PiVisCamera:
     def __init__(self, scheduler, server, resolution):
-        self.server = server
+        self.server = server        
         self.camera = picamera.PiCamera()
         self.camera.rotation = 180
         self.resolution = resolution
-        self.camera.resolution = self.resolution
+        self.camera.resolution = self.resolution      
         time.sleep(2)
-        scheduler.registerRunnable(self.run)
+        scheduler.registerRunnable(self.run) 
 
     def run(self):
         currImage = io.BytesIO()
@@ -26,9 +25,6 @@ class PiVisCamera:
 if __name__ == "__main__":
     print("PiVisCamera starting")
     scheduler = PiVisScheduler()
-    if len(sys.argv) > 0:
-        server = PiVisServer(scheduler, PiVisConstants.CAMERA_SERVICE)
-    else:
-        server = PiVisServer(scheduler, PiVisConstants.RAW_IMAGE_SERVICE)
+    server = PiVisServer(scheduler, PiVisConstants.RAW_IMAGE_SERVICE)    
     camera = PiVisCamera(scheduler, server, PiVisConstants.IMAGE_RESOLUTION)
     scheduler.run()
