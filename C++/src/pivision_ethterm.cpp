@@ -2,8 +2,6 @@
 #include "jobdispatcher.h"
 #include "pivision_threadmodel.h"
 
-#include <algorithm>
-
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -206,9 +204,9 @@ void PiVisionEthTermConnectionJob::Receive(const uint32_t numBytesToGet, PiVisio
   unsigned char buffer[MAX_CHUNK_SIZE];
 
   int32_t numBytesReceived = 0;
-  uint32_t maxChunkSize = std::min(MAX_CHUNK_SIZE, numBytesToGet);
   while((uint32_t)numBytesReceived < numBytesToGet)
   {
+    uint32_t maxChunkSize = std::min(MAX_CHUNK_SIZE, numBytesToGet - numBytesReceived);
     (void) memset(buffer, 0, sizeof(buffer));
     int32_t chunkSize = recv(socketFd,
                              buffer,
@@ -236,7 +234,20 @@ void PiVisionEthTermConnectionJob::Execute()
   {
     PiVisionDataBuf dataBuf;
 
-    Receive(COLOR_IMAGE_SIZE, dataBuf);
+    const uint32_t PAYLOAD_SIZE_HEADER_SIZE = 4u;
+    Receive(PAYLOAD_SIZE_HEADER_SIZE, dataBuf);
+
+    char payloadSizeBuf[PAYLOAD_SIZE_HEADER_SIZE] = {0x0};
+    for(uint32_t i = 0u; i < dataBuf.size(); ++i)
+    {
+      payloadSizeBuf[i] = dataBuf[i];
+    }
+
+    uint32_t payloadLength;
+    (void) memcpy(&payloadLength, payloadSizeBuf, sizeof(payloadSizeBuf));
+
+    dataBuf.clear();
+    Receive(payloadLength, dataBuf);
 
     auto newFrameInd = std::make_shared<PiVisionNewFrameInd>(dataBuf);
     JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_NEW_FRAME_IND, newFrameInd);

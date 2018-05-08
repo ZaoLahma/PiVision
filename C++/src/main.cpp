@@ -11,7 +11,7 @@ int main(void)
   JobDispatcher::GetApi()->Log("PiVision start");
 
   PiVisionEthTerm ethTerm;
-  PiVisionClient client(3070);
+  PiVisionClient client(3370);
 
   JobDispatcher::GetApi()->AddExecGroup(PIVISION_FRAMECOORD_THREAD_ID, 0u);
   JobDispatcher::GetApi()->AddExecGroup(PIVISION_SERVICE_DISCOVERY_THREAD_ID, 5u);
