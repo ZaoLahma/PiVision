@@ -86,7 +86,7 @@ class PiVisServer:
         for connection in self.connections:
             try:
                 if self.portNo == PiVisConstants.CAMERA_SERVICE:
-                    dataSize = len(data).to_bytes(4, byteorder=small)
+                    dataSize = (len(data)).to_bytes(4, byteorder='little')
                     connection[0].sendall(dataSize)
                 connection[0].sendall(data)
             except Exception as e:
