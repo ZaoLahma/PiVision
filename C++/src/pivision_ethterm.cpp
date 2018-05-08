@@ -1,7 +1,8 @@
 #include "pivision_ethterm.h"
 #include "jobdispatcher.h"
-#include "pivision_events.h"
 #include "pivision_threadmodel.h"
+
+#include <algorithm>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -199,30 +200,45 @@ PiVisionEthTermConnectionJob::PiVisionEthTermConnectionJob(const int32_t _socket
 
 }
 
-void PiVisionEthTermConnectionJob::Execute()
+void PiVisionEthTermConnectionJob::Receive(const uint32_t numBytesToGet, PiVisionDataBuf& dataBuf)
 {
-  (void) memset(buffer, 0, sizeof(buffer));
+  const uint32_t MAX_CHUNK_SIZE = 256u;
+  unsigned char buffer[MAX_CHUNK_SIZE];
 
-  while(1)
+  int32_t numBytesReceived = 0;
+  uint32_t maxChunkSize = std::min(MAX_CHUNK_SIZE, numBytesToGet);
+  while((uint32_t)numBytesReceived < numBytesToGet)
   {
-    uint32_t numBytesReceived = 0u;
-    while(numBytesReceived < COLOR_IMAGE_SIZE)
-    {
-      int32_t chunkSize = recv(socketFd,
-                               &buffer[numBytesReceived],
-                               COLOR_IMAGE_SIZE - numBytesReceived,
-                               0);
+    (void) memset(buffer, 0, sizeof(buffer));
+    int32_t chunkSize = recv(socketFd,
+                             buffer,
+                             maxChunkSize,
+                             0);
 
-      if(chunkSize > 0)
+    if(chunkSize > 0)
+    {
+      numBytesReceived += chunkSize;
+      for(uint32_t i = 0; i < (uint32_t)chunkSize; ++i)
       {
-        numBytesReceived += chunkSize;
-      }
-      else
-      {
-        break;
+        dataBuf.push_back(buffer[i]);
       }
     }
-    auto newFrameInd = std::make_shared<PiVisionNewFrameInd>(buffer);
+    else
+    {
+      break;
+    }
+  }
+}
+
+void PiVisionEthTermConnectionJob::Execute()
+{
+  while(1)
+  {
+    PiVisionDataBuf dataBuf;
+
+    Receive(COLOR_IMAGE_SIZE, dataBuf);
+
+    auto newFrameInd = std::make_shared<PiVisionNewFrameInd>(dataBuf);
     JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_NEW_FRAME_IND, newFrameInd);
   }
 }

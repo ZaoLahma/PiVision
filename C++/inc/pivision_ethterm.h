@@ -7,6 +7,7 @@
 #include "jobbase.h"
 #include "eventlistenerbase.h"
 #include "pivision_image_constants.h"
+#include "pivision_events.h"
 
 class PiVisionEthTermConnectServiceJob : public JobBase, public EventListenerBase
 {
@@ -36,8 +37,8 @@ public:
 class PiVisionEthTermConnectionJob : public JobBase, public EventListenerBase
 {
 private:
+  void Receive(const uint32_t numBytesToGet, PiVisionDataBuf& dataBuf);
   int32_t socketFd;
-  char buffer[COLOR_IMAGE_SIZE];
 
 protected:
 

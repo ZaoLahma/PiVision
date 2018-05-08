@@ -103,6 +103,8 @@ public:
   const int32_t socketFd;
 };
 
+typedef std::vector<unsigned char> PiVisionDataBuf;
+
 class PiVisionNewFrameInd : public EventDataBase
 {
 private:
@@ -111,11 +113,11 @@ private:
 protected:
 
 public:
-  PiVisionNewFrameInd(const char* _buffer)
+  PiVisionNewFrameInd(PiVisionDataBuf _buf) : imageData(_buf)
   {
-    (void) memcpy(imageData, _buffer, sizeof(imageData));
+
   }
-  char imageData[COLOR_IMAGE_SIZE];
+  PiVisionDataBuf imageData;
 };
 
 #endif
