@@ -3,6 +3,7 @@
 
 #include <string>
 #include <thread>
+#include <mutex>
 
 #include "jobbase.h"
 #include "eventlistenerbase.h"
