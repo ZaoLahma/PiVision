@@ -27,6 +27,7 @@ void PiVisionEthTerm::HandleEvent(const uint32_t eventNo, std::shared_ptr<EventD
       std::shared_ptr<PiVisionConnectionStatusInd> statusInd = std::static_pointer_cast<PiVisionConnectionStatusInd>(dataPtr);
       switch(statusInd->status)
       {
+        case PiVisionServiceStatus::SERVICE_DISCONNECTED:
         case PiVisionServiceStatus::SERVICE_NOT_FOUND:
         {
           std::shared_ptr<EventDataBase> connectRej = std::make_shared<PiVisionConnectToServiceRej>(statusInd->serviceNo);

@@ -9,6 +9,8 @@ typedef std::map<uint32_t, int32_t> PiVisionServiceToSocketMap;
 class PiVisionServiceHandler : public EventListenerBase
 {
 private:
+  int32_t LOCAL_SERVICE;
+  int32_t REMOTE_SERVICE_DISCONNECTED;
   PiVisionServiceToSocketMap services;
 
 protected:

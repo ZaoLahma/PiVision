@@ -3,17 +3,33 @@
 #include "pivision_events.h"
 #include "pivision_services.h"
 
-PiVisionServiceHandler::PiVisionServiceHandler()
+PiVisionServiceHandler::PiVisionServiceHandler() :
+LOCAL_SERVICE(0),
+REMOTE_SERVICE_DISCONNECTED(-1)
 {
   JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_SUBSCRIBE_SERVICE_IND, this);
   JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_CONNECT_TO_SERVICE_CFM, this);
   JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_CONNECT_TO_SERVICE_REJ, this);
+  JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_SERVICE_AVAILABLE_IND, this);
 }
 
 void PiVisionServiceHandler::HandleEvent(const uint32_t eventNo, std::shared_ptr<EventDataBase> dataPtr)
 {
   switch(eventNo)
   {
+    case PIVISION_EVENT_SERVICE_AVAILABLE_IND:
+    {
+      auto newService = std::static_pointer_cast<PiVisionServiceAvailableInd>(dataPtr);
+      auto service = services.find(newService->serviceNo);
+
+      if(services.end() == service)
+      {
+        services[newService->serviceNo] = LOCAL_SERVICE;
+        auto serviceAvail = std::make_shared<PiVisionServiceAvailableInd>(newService->serviceNo);
+        JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_SERVICE_AVAILABLE_IND, serviceAvail);
+      }
+    }
+    break;
     case PIVISION_EVENT_SUBSCRIBE_SERVICE_IND:
     {
       auto subscribeService = std::static_pointer_cast<PiVisionSubscribeServiceInd>(dataPtr);
@@ -21,15 +37,17 @@ void PiVisionServiceHandler::HandleEvent(const uint32_t eventNo, std::shared_ptr
       auto service = services.find(subscribeService->serviceNo);
       if(services.end() != service)
       {
-        if(-1 != service->second)
+        if(REMOTE_SERVICE_DISCONNECTED != service->second)
         {
+          /* Service has been published by local or network actor */
           auto serviceAvail = std::make_shared<PiVisionServiceAvailableInd>(service->first);
           JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_SERVICE_AVAILABLE_IND, serviceAvail);
         }
       }
       else
       {
-        services[subscribeService->serviceNo] = -1;
+        /* If service has not been published by local actor, ask network */
+        services[subscribeService->serviceNo] = REMOTE_SERVICE_DISCONNECTED;
         auto connectService = std::make_shared<PiVisionConnectToServiceReq>(subscribeService->serviceNo);
         JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_CONNECT_TO_SERVICE_REQ, connectService);
       }
