@@ -64,7 +64,7 @@ void PiVisionEthTermConnection::Execute()
     Receive(payloadLength, dataBuf);
 
     auto newData = std::make_shared<PiVisionNewDataInd>(dataBuf);
-    JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_NEW_DATA_IND, newData);
+    JobDispatcher::GetApi()->RaiseEvent(serviceNo, newData);
   }
 
   close(socketFd);

@@ -32,8 +32,8 @@ void PiVisionEthTerm::HandleEvent(const uint32_t eventNo, std::shared_ptr<EventD
         {
           std::shared_ptr<EventDataBase> connectRej = std::make_shared<PiVisionConnectToServiceRej>(statusInd->serviceNo);
           JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_CONNECT_TO_SERVICE_REJ, connectRej);
-          break;
         }
+        break;
         case PiVisionServiceStatus::SERVICE_CONNECTED:
         {
           auto connectCfm = std::make_shared<PiVisionConnectToServiceCfm>(statusInd->serviceNo,
@@ -43,8 +43,8 @@ void PiVisionEthTerm::HandleEvent(const uint32_t eventNo, std::shared_ptr<EventD
 
           auto connectionJob = std::make_shared<PiVisionEthTermConnection>(statusInd->serviceNo, statusInd->socketFd);
           JobDispatcher::GetApi()->ExecuteJobInGroup(connectionJob, PIVISION_CONNECTIONS_THREAD_ID);
-          break;
         }
+        break;
         default:
         break;
       }

@@ -58,7 +58,7 @@ void PiVisionServiceHandler::HandleEvent(const uint32_t eventNo, std::shared_ptr
       auto connectCfm = std::static_pointer_cast<PiVisionConnectToServiceCfm>(dataPtr);
       auto service = services.find(connectCfm->serviceNo);
 
-      if(-1 == service->second)
+      if(REMOTE_SERVICE_DISCONNECTED == service->second)
       {
         services[connectCfm->serviceNo] = connectCfm->serviceId;
         auto serviceAvail = std::make_shared<PiVisionServiceAvailableInd>(connectCfm->serviceNo);

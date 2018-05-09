@@ -10,7 +10,7 @@ cameraServiceAvailable(false)
     JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_SERVICE_AVAILABLE_IND, this);
     JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_SERVICE_UNAVAILABLE_IND, this);
     JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_STOP, this);
-    JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_NEW_DATA_IND, this);
+    JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_CAMERA_SERVICE, this);
 
     auto subscribeService = std::make_shared<PiVisionSubscribeServiceInd>(PIVISION_CAMERA_SERVICE);
     JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_SUBSCRIBE_SERVICE_IND, subscribeService);
@@ -41,7 +41,7 @@ void PiVisionFrameCoord::HandleEvent(const uint32_t eventNo,
       }
     }
     break;
-    case PIVISION_EVENT_NEW_DATA_IND:
+    case PIVISION_CAMERA_SERVICE:
     {
       auto newDataInd = std::static_pointer_cast<PiVisionNewDataInd>(dataPtr);
       currFrame += 1u;
