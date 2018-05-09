@@ -10,5 +10,5 @@ the image data and make decisions based on the result.
 
 This is a toy project of mine so I won't be taking it too seriously in terms of code quality or functionality.
 
-The screenshot below shows the system highlighting the movement of the picture on a TV
+The screenshot below shows the system highlighting a TV in an otherwise semi-dark environment
 ![image](https://user-images.githubusercontent.com/17113438/39840390-8d68bbfe-53df-11e8-92e6-bb4777ee51d5.png)
