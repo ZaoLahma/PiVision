@@ -13,6 +13,9 @@ static const uint32_t PIVISION_EVENT_CONNECT_TO_SERVICE_REJ    = 0xFFFF0003u;
 static const uint32_t PIVISION_EVENT_SERVICE_STATUS_IND        = 0xFFFF0004u;
 static const uint32_t PIVISION_EVENT_SERVICE_DISCOVERY_TIMEOUT = 0xFFFF0005u;
 static const uint32_t PIVISION_EVENT_NEW_FRAME_IND             = 0xFFFF0006u;
+static const uint32_t PIVISION_EVENT_SUBSCRIBE_SERVICE_IND     = 0xFFFF0007u;
+static const uint32_t PIVISION_EVENT_SERVICE_AVAILABLE_IND     = 0xFFFF0008u;
+static const uint32_t PIVISION_EVENT_SERVICE_LOST_IND          = 0xFFFF0009u;
 
 class PiVisionConnectToServiceReq : public EventDataBase
 {
@@ -37,11 +40,14 @@ private:
 protected:
 
 public:
-  PiVisionConnectToServiceCfm(const uint32_t _serviceNo) : serviceNo(_serviceNo)
+  PiVisionConnectToServiceCfm(const uint32_t _serviceNo, const uint32_t _serviceId) :
+  serviceNo(_serviceNo),
+  serviceId(_serviceId)
   {
 
   }
   const uint32_t serviceNo;
+  const uint32_t serviceId;
 };
 
 class PiVisionConnectToServiceRej : public EventDataBase
@@ -81,15 +87,15 @@ enum class PiVisionServiceStatus
   SERVICE_NOT_FOUND
 };
 
-class PiVisionServiceStatusInd : public EventDataBase
+class PiVisionConnectionStatusInd : public EventDataBase
 {
 private:
-  PiVisionServiceStatusInd();
+  PiVisionConnectionStatusInd();
 
 protected:
 
 public:
-  PiVisionServiceStatusInd(const PiVisionServiceStatus _status,
+  PiVisionConnectionStatusInd(const PiVisionServiceStatus _status,
                            const uint32_t _serviceNo,
                            const int32_t _socketFd) :
   status(_status),
@@ -118,6 +124,51 @@ public:
 
   }
   PiVisionDataBuf imageData;
+};
+
+class PiVisionSubscribeServiceInd : public EventDataBase
+{
+private:
+  PiVisionSubscribeServiceInd();
+
+protected:
+
+public:
+  const uint32_t serviceNo;
+  PiVisionSubscribeServiceInd(const uint32_t _serviceNo) : serviceNo(_serviceNo)
+  {
+
+  }
+};
+
+class PiVisionServiceAvailableInd : public EventDataBase
+{
+private:
+  PiVisionServiceAvailableInd();
+
+protected:
+
+public:
+  const uint32_t serviceNo;
+  PiVisionServiceAvailableInd(const uint32_t _serviceNo) : serviceNo(_serviceNo)
+  {
+
+  }
+};
+
+class PiVisionServiceLostInd : public EventDataBase
+{
+private:
+  PiVisionServiceLostInd();
+
+protected:
+
+public:
+  const uint32_t serviceNo;
+  PiVisionServiceLostInd(const uint32_t _serviceNo) : serviceNo(_serviceNo)
+  {
+
+  }
 };
 
 #endif
