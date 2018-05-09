@@ -12,10 +12,10 @@ static const uint32_t PIVISION_EVENT_CONNECT_TO_SERVICE_CFM    = 0xFFFF0002u;
 static const uint32_t PIVISION_EVENT_CONNECT_TO_SERVICE_REJ    = 0xFFFF0003u;
 static const uint32_t PIVISION_EVENT_SERVICE_STATUS_IND        = 0xFFFF0004u;
 static const uint32_t PIVISION_EVENT_SERVICE_DISCOVERY_TIMEOUT = 0xFFFF0005u;
-static const uint32_t PIVISION_EVENT_NEW_FRAME_IND             = 0xFFFF0006u;
+static const uint32_t PIVISION_EVENT_NEW_DATA_IND              = 0xFFFF0006u;
 static const uint32_t PIVISION_EVENT_SUBSCRIBE_SERVICE_IND     = 0xFFFF0007u;
 static const uint32_t PIVISION_EVENT_SERVICE_AVAILABLE_IND     = 0xFFFF0008u;
-static const uint32_t PIVISION_EVENT_SERVICE_UNAVAILABLE_IND          = 0xFFFF0009u;
+static const uint32_t PIVISION_EVENT_SERVICE_UNAVAILABLE_IND   = 0xFFFF0009u;
 
 class PiVisionConnectToServiceReq : public EventDataBase
 {
@@ -111,19 +111,20 @@ public:
 
 typedef std::vector<unsigned char> PiVisionDataBuf;
 
-class PiVisionNewFrameInd : public EventDataBase
+class PiVisionNewDataInd : public EventDataBase
 {
 private:
-  PiVisionNewFrameInd();
+  PiVisionNewDataInd();
 
 protected:
 
 public:
-  PiVisionNewFrameInd(PiVisionDataBuf _buf) : imageData(_buf)
+  PiVisionNewDataInd(const PiVisionDataBuf _buf) :
+  imageData(_buf)
   {
 
   }
-  PiVisionDataBuf imageData;
+  const PiVisionDataBuf imageData;
 };
 
 class PiVisionSubscribeServiceInd : public EventDataBase

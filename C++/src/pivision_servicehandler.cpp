@@ -23,13 +23,13 @@ void PiVisionServiceHandler::HandleEvent(const uint32_t eventNo, std::shared_ptr
       {
         if(-1 != service->second)
         {
-          services[subscribeService->serviceNo] = -1;
           auto serviceAvail = std::make_shared<PiVisionServiceAvailableInd>(service->first);
           JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_SERVICE_AVAILABLE_IND, serviceAvail);
         }
       }
       else
       {
+        services[subscribeService->serviceNo] = -1;
         auto connectService = std::make_shared<PiVisionConnectToServiceReq>(subscribeService->serviceNo);
         JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_CONNECT_TO_SERVICE_REQ, connectService);
       }

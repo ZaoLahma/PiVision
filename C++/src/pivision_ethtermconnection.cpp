@@ -3,9 +3,13 @@
 #include "pivision_ethtermconnection.h"
 #include "jobdispatcher.h"
 
-PiVisionEthTermConnection::PiVisionEthTermConnection(const int32_t _socketFd) : socketFd(_socketFd)
+PiVisionEthTermConnection::PiVisionEthTermConnection(const uint32_t _serviceNo,
+                                                     const int32_t _socketFd) :
+active(true),
+serviceNo(_serviceNo),
+socketFd(_socketFd)
 {
-
+  JobDispatcher::GetApi()->SubscribeToEvent(serviceNo, this);
 }
 
 void PiVisionEthTermConnection::Receive(const uint32_t numBytesToGet, PiVisionDataBuf& dataBuf)
@@ -40,7 +44,7 @@ void PiVisionEthTermConnection::Receive(const uint32_t numBytesToGet, PiVisionDa
 
 void PiVisionEthTermConnection::Execute()
 {
-  while(1)
+  while(active)
   {
     PiVisionDataBuf dataBuf;
 
@@ -56,8 +60,8 @@ void PiVisionEthTermConnection::Execute()
     dataBuf.clear();
     Receive(payloadLength, dataBuf);
 
-    auto newFrameInd = std::make_shared<PiVisionNewFrameInd>(dataBuf);
-    JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_NEW_FRAME_IND, newFrameInd);
+    auto newData = std::make_shared<PiVisionNewDataInd>(dataBuf);
+    JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_NEW_DATA_IND, newData);
   }
 }
 

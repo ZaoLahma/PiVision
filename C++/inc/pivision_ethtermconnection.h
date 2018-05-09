@@ -9,12 +9,14 @@ class PiVisionEthTermConnection : public JobBase, public EventListenerBase
 {
 private:
   void Receive(const uint32_t numBytesToGet, PiVisionDataBuf& dataBuf);
-  int32_t socketFd;
+  bool active;
+  const uint32_t serviceNo;
+  const int32_t socketFd;
 
 protected:
 
 public:
-  PiVisionEthTermConnection(const int32_t _socketFd);
+  PiVisionEthTermConnection(const uint32_t _serviceNo, const int32_t _socketFd);
   void Execute();
   void HandleEvent(const uint32_t eventNo, std::shared_ptr<EventDataBase> dataPtr);
 };
