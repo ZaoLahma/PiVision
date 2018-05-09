@@ -9,3 +9,6 @@ A client (might be a GUI or motion detection algorithm) can connect to the serve
 the image data and make decisions based on the result.
 
 This is a toy project of mine so I won't be taking it too seriously in terms of code quality or functionality.
+
+The screenshot below shows the system highlighting the movement of the picture on a TV
+![image](https://user-images.githubusercontent.com/17113438/39840390-8d68bbfe-53df-11e8-92e6-bb4777ee51d5.png)
