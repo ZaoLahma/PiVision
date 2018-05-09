@@ -1,7 +1,9 @@
 #include <sys/socket.h>
+#include <unistd.h>
 
 #include "pivision_ethtermconnection.h"
 #include "jobdispatcher.h"
+#include "pivision_events.h"
 
 PiVisionEthTermConnection::PiVisionEthTermConnection(const uint32_t _serviceNo,
                                                      const int32_t _socketFd) :
@@ -10,6 +12,7 @@ serviceNo(_serviceNo),
 socketFd(_socketFd)
 {
   JobDispatcher::GetApi()->SubscribeToEvent(serviceNo, this);
+  JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_STOP, this);
 }
 
 void PiVisionEthTermConnection::Receive(const uint32_t numBytesToGet, PiVisionDataBuf& dataBuf)
@@ -63,9 +66,18 @@ void PiVisionEthTermConnection::Execute()
     auto newData = std::make_shared<PiVisionNewDataInd>(dataBuf);
     JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_NEW_DATA_IND, newData);
   }
+
+  close(socketFd);
 }
 
 void PiVisionEthTermConnection::HandleEvent(const uint32_t eventNo, std::shared_ptr<EventDataBase> dataPtr)
 {
-
+  switch(eventNo)
+  {
+    case PIVISION_EVENT_STOP:
+      active = false;
+    break;
+    default:
+    break;
+  }
 }

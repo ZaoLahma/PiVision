@@ -10,13 +10,12 @@ int main(void)
 {
   JobDispatcher::GetApi()->Log("PiVision start");
 
-  PiVisionEthTerm ethTerm;
-  PiVisionServiceHandler services;
-
   JobDispatcher::GetApi()->AddExecGroup(PIVISION_FRAMECOORD_THREAD_ID, 0u);
   JobDispatcher::GetApi()->AddExecGroup(PIVISION_SERVICE_DISCOVERY_THREAD_ID, 5u);
   JobDispatcher::GetApi()->AddExecGroup(PIVISION_CONNECTIONS_THREAD_ID, 10u);
 
+  PiVisionEthTerm ethTerm;
+  PiVisionServiceHandler services;
   PiVisionFrameCoord frameCoord;
 
   JobDispatcher::GetApi()->WaitForExecutionFinished();
