@@ -26,10 +26,11 @@ class PiVisCamera:
 if __name__ == "__main__":
     print("PiVisCamera starting")
     scheduler = PiVisScheduler()
-    if len(sys.argv) > 0:
+    if len(sys.argv) > 1:
         print("Starting Camera service")
         server = PiVisServer(scheduler, PiVisConstants.CAMERA_SERVICE, PiVisConstants.DISCOVER_CAMERA_SERVICE)
     else:
+        print("Starring legacy image service")
         server = PiVisServer(scheduler, PiVisConstants.RAW_IMAGE_SERVICE)
     camera = PiVisCamera(scheduler, server, PiVisConstants.IMAGE_RESOLUTION)
     scheduler.run()
