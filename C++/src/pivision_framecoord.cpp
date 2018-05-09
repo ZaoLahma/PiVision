@@ -8,7 +8,7 @@ currFrame(0u),
 cameraServiceAvailable(false)
 {
     JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_SERVICE_AVAILABLE_IND, this);
-    JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_SERVICE_LOST_IND, this);
+    JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_SERVICE_UNAVAILABLE_IND, this);
     JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_STOP, this);
     JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_NEW_FRAME_IND, this);
 
@@ -21,9 +21,9 @@ void PiVisionFrameCoord::HandleEvent(const uint32_t eventNo,
 {
   switch(eventNo)
   {
-    case PIVISION_EVENT_SERVICE_LOST_IND:
+    case PIVISION_EVENT_SERVICE_UNAVAILABLE_IND:
     {
-      auto serviceUnavailable = std::static_pointer_cast<PiVisionServiceLostInd>(dataPtr);
+      auto serviceUnavailable = std::static_pointer_cast<PiVisionServiceUnavailableInd>(dataPtr);
       if(PIVISION_CAMERA_SERVICE == serviceUnavailable->serviceNo)
       {
         JobDispatcher::GetApi()->Log("PiVisionFrameCoord lost camera. Abort.");

@@ -65,7 +65,7 @@ void PiVisionEthTermConnectServiceJob::FindService(void)
   {
     serverAddressArray[bytesReceived] = '\0';
     serverAddress = std::string(serverAddressArray);
-    JobDispatcher::GetApi()->Log("Received service address: %s",
+    JobDispatcher::GetApi()->Log("PiVisionEthTermConnectServiceJob Received service address: %s",
                                  serverAddress.c_str());
     serviceFound = true;
   }
@@ -88,13 +88,11 @@ int32_t PiVisionEthTermConnectServiceJob::ConnectToServer()
                   &hints,
                   &servinfo) != 0)
   {
-      printf("getddrinfo\n");
       return -1;
   }
 
   for(p = servinfo; p != 0; p = p->ai_next)
   {
-    (void) printf("Finding suitable servinfo\n");
       if ((sockfd = socket(p->ai_family, p->ai_socktype,
                            p->ai_protocol)) == -1)
       {
@@ -148,23 +146,23 @@ void PiVisionEthTermConnectServiceJob::Execute()
 
   if(serviceFound)
   {
-    JobDispatcher::GetApi()->Log("ConnectServiceJob Service %u found", serviceNo);
+    JobDispatcher::GetApi()->Log("PiVisionEthTermConnectServiceJob Service %u found", serviceNo);
     if(-1 != (socketFd = ConnectToServer()))
     {
       PiVisionServiceStatus status = PiVisionServiceStatus::SERVICE_CONNECTED;
       connectionStatusIndInd = std::make_shared<PiVisionConnectionStatusInd>(status, serviceNo, socketFd);
-      JobDispatcher::GetApi()->Log("ConnectServiceJob PiVision connected to service %u", serviceNo);
+      JobDispatcher::GetApi()->Log("PiVisionEthTermConnectServiceJob PiVision connected to service %u", serviceNo);
     }
     else
     {
-      JobDispatcher::GetApi()->Log("ConnectServiceJob Failed to connect to service %u", serviceNo);
+      JobDispatcher::GetApi()->Log("PiVisionEthTermConnectServiceJob Failed to connect to service %u", serviceNo);
       PiVisionServiceStatus status = PiVisionServiceStatus::SERVICE_DISCONNECTED;
       connectionStatusIndInd = std::make_shared<PiVisionConnectionStatusInd>(status, serviceNo, -1);
     }
   }
   else
   {
-    JobDispatcher::GetApi()->Log("ConnectServiceJob Service %u not found", serviceNo);
+    JobDispatcher::GetApi()->Log("PiVisionEthTermConnectServiceJob Service %u not found", serviceNo);
     PiVisionServiceStatus status = PiVisionServiceStatus::SERVICE_NOT_FOUND;
     connectionStatusIndInd = std::make_shared<PiVisionConnectionStatusInd>(status, serviceNo, -1);
   }

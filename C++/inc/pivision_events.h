@@ -15,7 +15,7 @@ static const uint32_t PIVISION_EVENT_SERVICE_DISCOVERY_TIMEOUT = 0xFFFF0005u;
 static const uint32_t PIVISION_EVENT_NEW_FRAME_IND             = 0xFFFF0006u;
 static const uint32_t PIVISION_EVENT_SUBSCRIBE_SERVICE_IND     = 0xFFFF0007u;
 static const uint32_t PIVISION_EVENT_SERVICE_AVAILABLE_IND     = 0xFFFF0008u;
-static const uint32_t PIVISION_EVENT_SERVICE_LOST_IND          = 0xFFFF0009u;
+static const uint32_t PIVISION_EVENT_SERVICE_UNAVAILABLE_IND          = 0xFFFF0009u;
 
 class PiVisionConnectToServiceReq : public EventDataBase
 {
@@ -156,16 +156,16 @@ public:
   }
 };
 
-class PiVisionServiceLostInd : public EventDataBase
+class PiVisionServiceUnavailableInd : public EventDataBase
 {
 private:
-  PiVisionServiceLostInd();
+  PiVisionServiceUnavailableInd();
 
 protected:
 
 public:
   const uint32_t serviceNo;
-  PiVisionServiceLostInd(const uint32_t _serviceNo) : serviceNo(_serviceNo)
+  PiVisionServiceUnavailableInd(const uint32_t _serviceNo) : serviceNo(_serviceNo)
   {
 
   }

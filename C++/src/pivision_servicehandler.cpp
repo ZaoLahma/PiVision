@@ -51,8 +51,8 @@ void PiVisionServiceHandler::HandleEvent(const uint32_t eventNo, std::shared_ptr
     case PIVISION_EVENT_CONNECT_TO_SERVICE_REJ:
     {
       auto connectRej = std::static_pointer_cast<PiVisionConnectToServiceRej>(dataPtr);
-      auto serviceUnavailable = std::make_shared<PiVisionServiceLostInd>(connectRej->serviceNo);
-      JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_SERVICE_LOST_IND, serviceUnavailable);
+      auto serviceUnavailable = std::make_shared<PiVisionServiceUnavailableInd>(connectRej->serviceNo);
+      JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_SERVICE_UNAVAILABLE_IND, serviceUnavailable);
     }
     break;
     default:
