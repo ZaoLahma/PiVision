@@ -51,11 +51,8 @@ void PiVisionServiceHandler::HandleEvent(const uint32_t eventNo, std::shared_ptr
     case PIVISION_EVENT_CONNECT_TO_SERVICE_REJ:
     {
       auto connectRej = std::static_pointer_cast<PiVisionConnectToServiceRej>(dataPtr);
-      if(PIVISION_CAMERA_SERVICE == connectRej->serviceNo)
-      {
-        JobDispatcher::GetApi()->Log("ServiceHandler could not locate camera. Abort.");
-        JobDispatcher::GetApi()->RaiseEventIn(PIVISION_EVENT_STOP, nullptr, 500u);
-      }
+      auto serviceUnavailable = std::make_shared<PiVisionServiceLostInd>(connectRej->serviceNo);
+      JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_SERVICE_LOST_IND, serviceUnavailable);
     }
     break;
     default:

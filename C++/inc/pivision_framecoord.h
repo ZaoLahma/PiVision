@@ -3,19 +3,17 @@
 
 #include <cstddef>
 
-#include "jobbase.h"
 #include "eventlistenerbase.h"
 
-class PiVisionFrameCoord : public JobBase, public EventListenerBase
+class PiVisionFrameCoord : public EventListenerBase
 {
 private:
   uint32_t currFrame;
-  bool running;
+  bool cameraServiceAvailable;
 protected:
 
 public:
   PiVisionFrameCoord();
-  void Execute();
   void HandleEvent(const uint32_t eventNo, std::shared_ptr<EventDataBase> dataPtr);
 };
 

@@ -17,9 +17,7 @@ int main(void)
   JobDispatcher::GetApi()->AddExecGroup(PIVISION_SERVICE_DISCOVERY_THREAD_ID, 5u);
   JobDispatcher::GetApi()->AddExecGroup(PIVISION_CONNECTIONS_THREAD_ID, 10u);
 
-  std::shared_ptr<JobBase> frameCoordJob = std::make_shared<PiVisionFrameCoord>();
-
-  JobDispatcher::GetApi()->ExecuteJobInGroup(frameCoordJob, PIVISION_FRAMECOORD_THREAD_ID);
+  PiVisionFrameCoord frameCoord;
 
   JobDispatcher::GetApi()->WaitForExecutionFinished();
 

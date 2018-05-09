@@ -3,7 +3,9 @@
 #include "pivision_events.h"
 #include "pivision_services.h"
 
-PiVisionFrameCoord::PiVisionFrameCoord() : currFrame(0u), running(true)
+PiVisionFrameCoord::PiVisionFrameCoord() :
+currFrame(0u),
+cameraServiceAvailable(false)
 {
     JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_SERVICE_AVAILABLE_IND, this);
     JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_SERVICE_LOST_IND, this);
@@ -14,26 +16,29 @@ PiVisionFrameCoord::PiVisionFrameCoord() : currFrame(0u), running(true)
     JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_SUBSCRIBE_SERVICE_IND, subscribeService);
 }
 
-void PiVisionFrameCoord::Execute()
-{
-  JobDispatcher::GetApi()->Log("PiVisionFrameCoord started");
-
-  while(running)
-  {
-    /* Do clever stuff here? */
-  }
-
-  JobDispatcher::GetApi()->NotifyExecutionFinished();
-}
-
 void PiVisionFrameCoord::HandleEvent(const uint32_t eventNo,
                                      std::shared_ptr<EventDataBase> dataPtr)
 {
   switch(eventNo)
   {
+    case PIVISION_EVENT_SERVICE_LOST_IND:
+    {
+      auto serviceUnavailable = std::static_pointer_cast<PiVisionServiceLostInd>(dataPtr);
+      if(PIVISION_CAMERA_SERVICE == serviceUnavailable->serviceNo)
+      {
+        JobDispatcher::GetApi()->Log("PiVisionFrameCoord lost camera. Abort.");
+        JobDispatcher::GetApi()->RaiseEventIn(PIVISION_EVENT_STOP, nullptr, 500u);
+      }
+    }
+    break;
     case PIVISION_EVENT_SERVICE_AVAILABLE_IND:
     {
-
+      auto service = std::static_pointer_cast<PiVisionServiceAvailableInd>(dataPtr);
+      if(PIVISION_CAMERA_SERVICE == service->serviceNo)
+      {
+        JobDispatcher::GetApi()->Log("PiVisionFrameCoord connected to camera");
+        cameraServiceAvailable = true;
+      }
     }
     break;
     case PIVISION_EVENT_NEW_FRAME_IND:
@@ -44,7 +49,7 @@ void PiVisionFrameCoord::HandleEvent(const uint32_t eventNo,
       break;
     }
     case PIVISION_EVENT_STOP:
-      running = false;
+      JobDispatcher::GetApi()->NotifyExecutionFinished();
       break;
     default:
       JobDispatcher::GetApi()->Log("PiVisionFrameCoord received unexpected event: 0x%x", eventNo);
