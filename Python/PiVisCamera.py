@@ -24,19 +24,21 @@ class PiVisCamera:
         if self.appendRes:
             xRes = self.resolution[0]
             yRes = self.resolution[1]
-            currImage.append(xRes.to_bytes(2, byteorder='little'))
-            currImage.append(yRes.to_bytes(2, byteorder='little'))
+            currImage.write(xRes.to_bytes(2, byteorder='little'))
+            currImage.write(yRes.to_bytes(2, byteorder='little'))
         self.camera.capture(currImage, 'rgb', use_video_port=True)
         self.server.send(bytearray(currImage.getvalue()))
 
 if __name__ == "__main__":
     print("PiVisCamera starting")
     scheduler = PiVisScheduler()
+    camera = 0
     if len(sys.argv) > 1:
         print("Starting Camera service")
         server = PiVisServer(scheduler, PiVisConstants.CAMERA_SERVICE, PiVisConstants.DISCOVER_CAMERA_SERVICE)
+        camera = PiVisCamera(scheduler, server, PiVisConstants.IMAGE_RESOLUTION, True)
     else:
         print("Starring legacy image service")
         server = PiVisServer(scheduler, PiVisConstants.RAW_IMAGE_SERVICE)
-    camera = PiVisCamera(scheduler, server, PiVisConstants.IMAGE_RESOLUTION)
+        camera = PiVisCamera(scheduler, server, PiVisConstants.IMAGE_RESOLUTION)
     scheduler.run()
