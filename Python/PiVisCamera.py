@@ -21,15 +21,13 @@ class PiVisCamera:
 
     def run(self):
         currImage = io.BytesIO()
-        self.camera.capture(currImage, 'rgb', use_video_port=True)
-        imageData = bytearray()
         if self.appendRes:
             xRes = self.resolution[0]
             yRes = self.resolution[1]
-            imageData.append(xRes.to_bytes(2, byteorder='little'))
-            imageData.append(yRes.to_bytes(2, byteorder='little'))
-        imageData.append(currImage.getvalue())
-        self.server.send(imageData)
+            currImage.append(xRes.to_bytes(2, byteorder='little'))
+            currImage.append(yRes.to_bytes(2, byteorder='little'))
+        self.camera.capture(currImage, 'rgb', use_video_port=True)
+        self.server.send(bytearray(currImage.getvalue()))
 
 if __name__ == "__main__":
     print("PiVisCamera starting")
