@@ -16,6 +16,7 @@ static const uint32_t PIVISION_EVENT_NEW_DATA_IND              = 0xFFFF0006u;
 static const uint32_t PIVISION_EVENT_SUBSCRIBE_SERVICE_IND     = 0xFFFF0007u;
 static const uint32_t PIVISION_EVENT_SERVICE_AVAILABLE_IND     = 0xFFFF0008u;
 static const uint32_t PIVISION_EVENT_SERVICE_UNAVAILABLE_IND   = 0xFFFF0009u;
+static const uint32_t PIVISION_EVENT_SERVICE_ADD_IND           = 0xFFFF000Au;
 
 class PiVisionConnectToServiceReq : public EventDataBase
 {

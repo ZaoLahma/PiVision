@@ -17,7 +17,7 @@ void PiVisionServiceHandler::HandleEvent(const uint32_t eventNo, std::shared_ptr
 {
   switch(eventNo)
   {
-    case PIVISION_EVENT_SERVICE_AVAILABLE_IND:
+    case PIVISION_EVENT_SERVICE_ADD_IND:
     {
       auto newService = std::static_pointer_cast<PiVisionServiceAvailableInd>(dataPtr);
       auto service = services.find(newService->serviceNo);

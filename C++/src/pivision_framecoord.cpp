@@ -38,6 +38,9 @@ void PiVisionFrameCoord::HandleEvent(const uint32_t eventNo,
       {
         JobDispatcher::GetApi()->Log("PiVisionFrameCoord connected to camera");
         cameraServiceAvailable = true;
+
+        auto serviceAvailable = std::make_shared<PiVisionServiceAvailableInd>(PIVISION_COLOR_IMAGE_SERVICE);
+        JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_SERVICE_AVAILABLE_IND, serviceAvailable);
       }
     }
     break;
