@@ -10,14 +10,14 @@ REMOTE_SERVICE_DISCONNECTED(-1)
   JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_SUBSCRIBE_SERVICE_IND, this);
   JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_CONNECT_TO_SERVICE_CFM, this);
   JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_CONNECT_TO_SERVICE_REJ, this);
-  JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_SERVICE_ADD_IND, this);
+  JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_SERVICE_PROVIDED_IND, this);
 }
 
 void PiVisionServiceHandler::HandleEvent(const uint32_t eventNo, std::shared_ptr<EventDataBase> dataPtr)
 {
   switch(eventNo)
   {
-    case PIVISION_EVENT_SERVICE_ADD_IND:
+    case PIVISION_EVENT_SERVICE_PROVIDED_IND:
     {
       auto newService = std::static_pointer_cast<PiVisionServiceAvailableInd>(dataPtr);
       auto service = services.find(newService->serviceNo);
