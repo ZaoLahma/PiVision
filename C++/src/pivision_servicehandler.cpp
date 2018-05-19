@@ -10,7 +10,7 @@ REMOTE_SERVICE_DISCONNECTED(-1)
   JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_SUBSCRIBE_SERVICE_IND, this);
   JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_CONNECT_TO_SERVICE_CFM, this);
   JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_CONNECT_TO_SERVICE_REJ, this);
-  JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_SERVICE_AVAILABLE_IND, this);
+  JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_SERVICE_ADD_IND, this);
 }
 
 void PiVisionServiceHandler::HandleEvent(const uint32_t eventNo, std::shared_ptr<EventDataBase> dataPtr)
