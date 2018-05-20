@@ -30,6 +30,11 @@ socketFd(0)
   JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_SERVICE_DISCOVERY_TIMEOUT, this);
 }
 
+PiVisionEthTermConnectService::~PiVisionEthTermConnectService()
+{
+  JobDispatcher::GetApi()->UnsubscribeToEvent(PIVISION_EVENT_SERVICE_DISCOVERY_TIMEOUT, this);
+}
+
 void PiVisionEthTermConnectService::FindService(void)
 {
   std::string serviceDiscoverString = serviceDiscoveryHeader + std::to_string(serviceNo);

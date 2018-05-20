@@ -22,7 +22,9 @@ void PiVisionServiceHandler::HandleEvent(const uint32_t eventNo, std::shared_ptr
       auto newService = std::static_pointer_cast<PiVisionServiceAvailableInd>(dataPtr);
       auto service = services.find(newService->serviceNo);
 
-      if(services.end() == service)
+      if(services.end() == service ||
+         ((services.end() != service) &&
+         (REMOTE_SERVICE_DISCONNECTED == service->second)))
       {
         services[newService->serviceNo] = LOCAL_SERVICE;
         auto serviceAvail = std::make_shared<PiVisionServiceAvailableInd>(newService->serviceNo);

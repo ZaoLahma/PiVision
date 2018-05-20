@@ -2,9 +2,11 @@
 #include "pivision_servicehandler.h"
 #include "pivision_threadmodel.h"
 #include "pivision_framecoord.h"
+#include "pivision_grayscaleimage.h"
 #include "pivision_ethterm.h"
 #include "pivision_events.h"
 #include <memory>
+#include <iostream>
 
 int main(void)
 {
@@ -17,6 +19,7 @@ int main(void)
   PiVisionEthTerm ethTerm;
   PiVisionServiceHandler services;
   PiVisionFrameCoord frameCoord;
+  PiVisionGrayscaleImage grayScale;
 
   JobDispatcher::GetApi()->WaitForExecutionFinished();
 

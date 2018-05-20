@@ -15,6 +15,12 @@ socketFd(_socketFd)
   JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_STOP, this);
 }
 
+PiVisionEthTermConnection::~PiVisionEthTermConnection()
+{
+  JobDispatcher::GetApi()->UnsubscribeToEvent(serviceNo, this);
+  JobDispatcher::GetApi()->UnsubscribeToEvent(PIVISION_EVENT_STOP, this);
+}
+
 void PiVisionEthTermConnection::Receive(const uint32_t numBytesToGet, PiVisionDataBuf& dataBuf)
 {
   const uint32_t MAX_CHUNK_SIZE = 256u;

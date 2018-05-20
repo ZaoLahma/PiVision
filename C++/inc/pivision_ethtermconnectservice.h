@@ -29,6 +29,7 @@ protected:
 
 public:
   PiVisionEthTermConnectService(const uint32_t _serviceNo);
+  ~PiVisionEthTermConnectService();
   void Execute();
   void HandleEvent(const uint32_t eventNo, std::shared_ptr<EventDataBase> dataPtr);
 };

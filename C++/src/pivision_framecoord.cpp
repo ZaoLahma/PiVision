@@ -39,8 +39,8 @@ void PiVisionFrameCoord::HandleEvent(const uint32_t eventNo,
         JobDispatcher::GetApi()->Log("PiVisionFrameCoord connected to camera");
         cameraServiceAvailable = true;
 
-        auto serviceAvailable = std::make_shared<PiVisionServiceAvailableInd>(PIVISION_COLOR_IMAGE_SERVICE);
-        JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_SERVICE_AVAILABLE_IND, serviceAvailable);
+        auto serviceProvided = std::make_shared<PiVisionServiceAvailableInd>(PIVISION_COLOR_IMAGE_SERVICE);
+        JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_SERVICE_PROVIDED_IND, serviceProvided);
       }
     }
     break;
@@ -49,8 +49,9 @@ void PiVisionFrameCoord::HandleEvent(const uint32_t eventNo,
       auto newDataInd = std::static_pointer_cast<PiVisionNewDataInd>(dataPtr);
       currFrame += 1u;
       JobDispatcher::GetApi()->Log("New frame: %u", currFrame);
-      break;
+      JobDispatcher::GetApi()->RaiseEvent(PIVISION_COLOR_IMAGE_SERVICE, dataPtr);
     }
+    break;
     case PIVISION_EVENT_STOP:
       JobDispatcher::GetApi()->NotifyExecutionFinished();
       break;
