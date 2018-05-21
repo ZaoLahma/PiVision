@@ -15,7 +15,8 @@
 PiVisionEthTermServiceListener::PiVisionEthTermServiceListener(const uint32_t _serviceNo) :
 serviceNo(_serviceNo),
 active(true),
-serviceDiscoverySocket(-1)
+serviceDiscoverySocket(-1),
+serverSocket(-1)
 {
   JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_STOP, this);
   getOwnIpAddress();
@@ -50,7 +51,7 @@ void PiVisionEthTermServiceListener::getOwnIpAddress()
 	freeifaddrs(addrs);
 }
 
-int PiVisionEthTermServiceListener::initiateServiceDiscoverySocket()
+void PiVisionEthTermServiceListener::initiateServiceDiscoverySocket()
 {
   struct ip_mreq mreq;
   serviceDiscoverySocket = socket(AF_INET, SOCK_DGRAM, 0);
@@ -82,7 +83,76 @@ int PiVisionEthTermServiceListener::initiateServiceDiscoverySocket()
 	timeout.tv_usec = 1;
 
 	setsockopt(serviceDiscoverySocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
-  return 0;
+}
+
+void PiVisionEthTermServiceListener::initiateServerSocketFd()
+{
+  struct addrinfo hints;
+  struct addrinfo* servinfo;
+  struct addrinfo* p;
+  int yes = 1;
+  int rv;
+
+  memset(&hints, 0, sizeof hints);
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_flags = AI_PASSIVE;
+
+  char portNoStr[6] = "";
+
+  sprintf(portNoStr, "%d", serviceNo);
+
+  if ((rv = getaddrinfo(0, portNoStr, &hints, &servinfo)) != 0)
+  {
+    printf("portNo: %u\n", serviceNo);
+    perror("getaddrinfo \n");
+    exit(1);
+  }
+
+
+  for(p = servinfo; p != 0; p = p->ai_next)
+  {
+      if ((serverSocket = socket(p->ai_family, p->ai_socktype,
+                           p->ai_protocol)) == -1)
+      {
+          continue;
+      }
+
+      if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &yes,
+                     sizeof(int)) == -1)
+      {
+        perror("reuseaddr\n");
+          exit(1);
+      }
+
+      if (bind(serverSocket, p->ai_addr, p->ai_addrlen) == -1)
+      {
+          close(serverSocket);
+          continue;
+      }
+
+      break;
+  }
+
+  freeaddrinfo(servinfo);
+
+  if (p == 0)
+  {
+    perror("p == 0\n");
+      exit(1);
+  }
+
+  if (listen(serverSocket, 10) == -1)
+  {
+    perror("listen\n");
+      exit(1);
+  }
+
+  struct timeval timeout;
+  timeout.tv_sec = 0;
+  timeout.tv_usec = 1000;
+
+  setsockopt(serverSocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
 }
 
 void PiVisionEthTermServiceListener::handleNewServiceDiscoveryRequests()
@@ -119,13 +189,12 @@ void PiVisionEthTermServiceListener::handleNewServiceDiscoveryRequests()
 
 void PiVisionEthTermServiceListener::Execute()
 {
-  if(0u == initiateServiceDiscoverySocket())
+  initiateServiceDiscoverySocket();
+  initiateServerSocketFd();
+  JobDispatcher::GetApi()->Log("Service %u published to network at address %s", serviceNo, ownIpAddress);
+  while(active)
   {
-    JobDispatcher::GetApi()->Log("Service %u published to network at address %s", serviceNo, ownIpAddress);
-    while(active)
-    {
-      handleNewServiceDiscoveryRequests();
-    }
+    handleNewServiceDiscoveryRequests();
   }
 }
 

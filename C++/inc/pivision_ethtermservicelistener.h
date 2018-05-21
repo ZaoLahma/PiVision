@@ -9,13 +9,15 @@
 class PiVisionEthTermServiceListener : public JobBase, public EventListenerBase
 {
 private:
-  int initiateServiceDiscoverySocket();
+  void initiateServiceDiscoverySocket();
+  void initiateServerSocketFd();
   void getOwnIpAddress();
   void handleNewServiceDiscoveryRequests();
 
   const uint32_t serviceNo;
   bool active;
   int32_t serviceDiscoverySocket;
+  int32_t serverSocket;
   struct sockaddr_in addr;
   char ownIpAddress[INET_ADDRSTRLEN];
 
