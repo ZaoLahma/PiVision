@@ -4,6 +4,7 @@
 #include "pivision_ethtermconnection.h"
 #include "jobdispatcher.h"
 #include "pivision_events.h"
+#include "pivision_macros.h"
 
 PiVisionEthTermConnection::PiVisionEthTermConnection(const uint32_t _serviceNo,
                                                      const int32_t _socketFd) :
@@ -46,6 +47,7 @@ void PiVisionEthTermConnection::Receive(const uint32_t numBytesToGet, PiVisionDa
     }
     else
     {
+      active = false;
       break;
     }
   }
@@ -73,11 +75,15 @@ void PiVisionEthTermConnection::Execute()
     JobDispatcher::GetApi()->RaiseEvent(serviceNo, newData);
   }
 
+  auto serviceUnavailable = std::make_shared<PiVisionServiceUnavailableInd>(this->serviceNo);
+  JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_SERVICE_UNAVAILABLE_IND, serviceUnavailable);
+
   close(socketFd);
 }
 
 void PiVisionEthTermConnection::HandleEvent(const uint32_t eventNo, std::shared_ptr<EventDataBase> dataPtr)
 {
+  PIVISION_UNUSED_ARG(dataPtr);
   switch(eventNo)
   {
     case PIVISION_EVENT_STOP:

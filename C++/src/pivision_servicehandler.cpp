@@ -29,6 +29,9 @@ void PiVisionServiceHandler::HandleEvent(const uint32_t eventNo, std::shared_ptr
         services[newService->serviceNo] = LOCAL_SERVICE;
         auto serviceAvail = std::make_shared<PiVisionServiceAvailableInd>(newService->serviceNo);
         JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_SERVICE_AVAILABLE_IND, serviceAvail);
+
+        auto provideService = std::make_shared<PiVisionProvideServiceInd>(newService->serviceNo);
+        JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_PROVIDE_SERVICE_IND, provideService);
       }
     }
     break;

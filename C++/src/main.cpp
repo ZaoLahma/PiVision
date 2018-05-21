@@ -15,6 +15,7 @@ int main(void)
   JobDispatcher::GetApi()->AddExecGroup(PIVISION_FRAMECOORD_THREAD_ID, 0u);
   JobDispatcher::GetApi()->AddExecGroup(PIVISION_SERVICE_DISCOVERY_THREAD_ID, 5u);
   JobDispatcher::GetApi()->AddExecGroup(PIVISION_CONNECTIONS_THREAD_ID, 10u);
+  JobDispatcher::GetApi()->AddExecGroup(PIVISION_SERVICE_LISTENER_THREAD_ID, 10u);
 
   PiVisionEthTerm ethTerm;
   PiVisionServiceHandler services;
