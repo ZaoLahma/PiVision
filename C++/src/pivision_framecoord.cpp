@@ -2,6 +2,7 @@
 #include "jobdispatcher.h"
 #include "pivision_events.h"
 #include "pivision_services.h"
+#include <iostream>
 
 PiVisionFrameCoord::PiVisionFrameCoord() :
 currFrame(0u),
@@ -47,9 +48,39 @@ void PiVisionFrameCoord::HandleEvent(const uint32_t eventNo,
     case PIVISION_CAMERA_SERVICE:
     {
       auto newDataInd = std::static_pointer_cast<PiVisionNewDataInd>(dataPtr);
+
+      const uint32_t IMAGE_HEADER_SIZE = 2u * sizeof(uint16_t);
+
+      uint16_t xSize = 0u;
+      uint16_t ySize = 0u;
+      uint32_t shiftIndex = 0u;
+
+      for(uint32_t i = 0u; i < sizeof(xSize); ++i)
+      {
+        xSize = xSize | (newDataInd->imageData[i] << (shiftIndex * 8u));
+        shiftIndex += 1u;
+      }
+
+      shiftIndex = 0u;
+
+      for(uint32_t i = sizeof(xSize); i < sizeof(xSize) + sizeof(ySize); ++i)
+      {
+        ySize = ySize | (newDataInd->imageData[i] << (shiftIndex * 8u));
+        shiftIndex += 1u;
+      }
+
+      PiVisionDataBuf pixelData;
+
+      for(uint32_t i = IMAGE_HEADER_SIZE; i < newDataInd->imageData.size(); ++i)
+      {
+        pixelData.push_back(newDataInd->imageData[i]);
+      }
+
+      auto imageData = std::make_shared<PiVisionImageData>(xSize, ySize, pixelData);
+
       currFrame += 1u;
       JobDispatcher::GetApi()->Log("New frame: %u", currFrame);
-      JobDispatcher::GetApi()->RaiseEvent(PIVISION_COLOR_IMAGE_SERVICE, dataPtr);
+      JobDispatcher::GetApi()->RaiseEvent(PIVISION_COLOR_IMAGE_SERVICE, imageData);
     }
     break;
     case PIVISION_EVENT_STOP:
