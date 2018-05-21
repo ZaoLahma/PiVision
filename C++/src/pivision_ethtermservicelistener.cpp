@@ -150,7 +150,7 @@ void PiVisionEthTermServiceListener::initiateServerSocketFd()
 
   struct timeval timeout;
   timeout.tv_sec = 0;
-  timeout.tv_usec = 1000;
+  timeout.tv_usec = 500000;
 
   setsockopt(serverSocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
 }
@@ -187,6 +187,35 @@ void PiVisionEthTermServiceListener::handleNewServiceDiscoveryRequests()
 	}
 }
 
+void PiVisionEthTermServiceListener::handleNewConnections()
+{
+  struct timeval tv;
+  fd_set acceptFds;
+
+  tv.tv_sec = 0;
+  tv.tv_usec = 0;
+
+  struct sockaddr_storage their_addr;
+  socklen_t sin_size;
+
+  sin_size = sizeof their_addr;
+
+	FD_ZERO(&acceptFds);
+	FD_SET(serverSocket, &acceptFds);
+
+	select(serverSocket + 1, &acceptFds, 0, 0, &tv);
+
+	if (FD_ISSET(serverSocket, &acceptFds))
+	{
+		int32_t clientSocket = accept(serverSocket, (struct sockaddr *)&their_addr, &sin_size);
+		struct timeval tv;
+		tv.tv_sec = 0;
+		tv.tv_usec = 500000;
+		setsockopt(clientSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
+		(void) printf("Accepted new connection\n");
+	}
+}
+
 void PiVisionEthTermServiceListener::Execute()
 {
   initiateServiceDiscoverySocket();
@@ -195,6 +224,7 @@ void PiVisionEthTermServiceListener::Execute()
   while(active)
   {
     handleNewServiceDiscoveryRequests();
+    handleNewConnections();
   }
 }
 

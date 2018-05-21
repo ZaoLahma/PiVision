@@ -13,6 +13,7 @@ private:
   void initiateServerSocketFd();
   void getOwnIpAddress();
   void handleNewServiceDiscoveryRequests();
+  void handleNewConnections();
 
   const uint32_t serviceNo;
   bool active;
