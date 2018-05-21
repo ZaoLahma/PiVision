@@ -18,6 +18,7 @@ active(true),
 serviceDiscoverySocket(-1)
 {
   JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_STOP, this);
+  getOwnIpAddress();
 }
 
 PiVisionEthTermServiceListener::~PiVisionEthTermServiceListener()
@@ -45,8 +46,6 @@ void PiVisionEthTermServiceListener::getOwnIpAddress()
 
 	    tmp = tmp->ifa_next;
 	}
-
-	(void) printf("Serving address %s\n", ownIpAddress);
 
 	freeifaddrs(addrs);
 }
@@ -122,7 +121,7 @@ void PiVisionEthTermServiceListener::Execute()
 {
   if(0u == initiateServiceDiscoverySocket())
   {
-    JobDispatcher::GetApi()->Log("Service %u published to network", serviceNo);
+    JobDispatcher::GetApi()->Log("Service %u published to network at address %s", serviceNo, ownIpAddress);
     while(active)
     {
       handleNewServiceDiscoveryRequests();

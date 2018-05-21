@@ -163,16 +163,16 @@ static void run()
 
 static void handleNewConnections()
 {
-    struct timeval tv;
-    fd_set acceptFds;
+  struct timeval tv;
+  fd_set acceptFds;
 
-    tv.tv_sec = 0;
-    tv.tv_usec = 0;
+  tv.tv_sec = 0;
+  tv.tv_usec = 0;
 
-    struct sockaddr_storage their_addr;
-    socklen_t sin_size;
+  struct sockaddr_storage their_addr;
+  socklen_t sin_size;
 
-    sin_size = sizeof their_addr;
+  sin_size = sizeof their_addr;
 
 	PiVisServerContext* context = (PiVisServerContext*)connections;
 
