@@ -192,9 +192,6 @@ void PiVisionEthTermServiceListener::handleNewConnections()
   struct timeval tv;
   fd_set acceptFds;
 
-  tv.tv_sec = 0;
-  tv.tv_usec = 0;
-
   struct sockaddr_storage their_addr;
   socklen_t sin_size;
 
@@ -202,6 +199,9 @@ void PiVisionEthTermServiceListener::handleNewConnections()
 
 	FD_ZERO(&acceptFds);
 	FD_SET(serverSocket, &acceptFds);
+
+  tv.tv_sec = 0;
+  tv.tv_usec = 500000;  
 
 	select(serverSocket + 1, &acceptFds, 0, 0, &tv);
 
@@ -223,8 +223,10 @@ void PiVisionEthTermServiceListener::Execute()
   JobDispatcher::GetApi()->Log("Service %u published to network at address %s", serviceNo, ownIpAddress);
   while(active)
   {
+    JobDispatcher::GetApi()->Log("Execute begin");
     handleNewServiceDiscoveryRequests();
     handleNewConnections();
+    JobDispatcher::GetApi()->Log("Execute done");
   }
 }
 
