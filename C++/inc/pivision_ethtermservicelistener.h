@@ -10,11 +10,14 @@ class PiVisionEthTermServiceListener : public JobBase, public EventListenerBase
 {
 private:
   int initiateServiceDiscoverySocket();
+  void getOwnIpAddress();
+  void handleNewServiceDiscoveryRequests();
 
   const uint32_t serviceNo;
   bool active;
   int32_t serviceDiscoverySocket;
   struct sockaddr_in addr;
+  char ownIpAddress[INET_ADDRSTRLEN];
 
 protected:
 

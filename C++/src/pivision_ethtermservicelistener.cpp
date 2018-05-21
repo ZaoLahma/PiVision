@@ -25,6 +25,32 @@ PiVisionEthTermServiceListener::~PiVisionEthTermServiceListener()
   JobDispatcher::GetApi()->UnsubscribeToEvent(PIVISION_EVENT_STOP, this);
 }
 
+void PiVisionEthTermServiceListener::getOwnIpAddress()
+{
+  struct ifaddrs* addrs;
+	(void) getifaddrs(&addrs);
+	struct ifaddrs* tmp = addrs;
+
+	while(tmp)
+	{
+	    if (tmp->ifa_addr && tmp->ifa_addr->sa_family == AF_INET)
+	    {
+	        struct sockaddr_in *pAddr = (struct sockaddr_in *)tmp->ifa_addr;
+	        inet_ntop(AF_INET, &((*pAddr).sin_addr), ownIpAddress, INET_ADDRSTRLEN);
+	        if(strncmp("127.0.0.1", ownIpAddress, INET_ADDRSTRLEN) != 0)
+	        {
+	        	break;
+	        }
+	    }
+
+	    tmp = tmp->ifa_next;
+	}
+
+	(void) printf("Serving address %s\n", ownIpAddress);
+
+	freeifaddrs(addrs);
+}
+
 int PiVisionEthTermServiceListener::initiateServiceDiscoverySocket()
 {
   struct ip_mreq mreq;
@@ -60,6 +86,38 @@ int PiVisionEthTermServiceListener::initiateServiceDiscoverySocket()
   return 0;
 }
 
+void PiVisionEthTermServiceListener::handleNewServiceDiscoveryRequests()
+{
+	char messageBuf[50];
+	unsigned int addrLen = sizeof(addr);
+	int bytesReceived = recvfrom(serviceDiscoverySocket,
+              								 messageBuf,
+              								 sizeof(messageBuf),
+              								 0,
+              								 (struct sockaddr *)&addr,
+              								 &addrLen);
+
+	char header[] = "WHERE_IS_";
+
+	if(bytesReceived > (int)strlen(header))
+	{
+		messageBuf[bytesReceived] = '\0';
+
+		char* portNoStr = &messageBuf[strlen(header)];
+		unsigned int portNo = atoi(portNoStr);
+
+		if(serviceNo == portNo)
+		{
+			printf("Service provided. Responding to: %s\n", inet_ntoa(addr.sin_addr));
+			sendto(serviceDiscoverySocket, ownIpAddress, INET_ADDRSTRLEN, 0, (struct sockaddr*)&addr, sizeof(addr));
+		}
+		else
+		{
+			printf("Service not provided\n");
+		}
+	}
+}
+
 void PiVisionEthTermServiceListener::Execute()
 {
   if(0u == initiateServiceDiscoverySocket())
@@ -67,7 +125,7 @@ void PiVisionEthTermServiceListener::Execute()
     JobDispatcher::GetApi()->Log("Service %u published to network", serviceNo);
     while(active)
     {
-      //...
+      handleNewServiceDiscoveryRequests();
     }
   }
 }
