@@ -3,12 +3,18 @@
 
 #include "jobbase.h"
 #include "eventlistenerbase.h"
+#include <string>
+#include <arpa/inet.h>
 
 class PiVisionEthTermServiceListener : public JobBase, public EventListenerBase
 {
 private:
+  int initiateServiceDiscoverySocket();
+
   const uint32_t serviceNo;
   bool active;
+  int32_t serviceDiscoverySocket;
+  struct sockaddr_in addr;
 
 protected:
 

@@ -3,4 +3,6 @@
 
 #define PIVISION_UNUSED_ARG(arg) arg = arg
 
+#define MULTICAST_GROUP "224.1.1.1"
+
 #endif

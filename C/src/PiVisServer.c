@@ -123,32 +123,32 @@ static void initiateServerSocketFd(PiVisServerContext* context)
 
 static void initiateServiceDiscoverySocket(PiVisServerContext* context)
 {
-    struct ip_mreq mreq;
-    context->serverContext.serviceDiscoverySocket = socket(AF_INET, SOCK_DGRAM, 0);
-	unsigned int yes = 1;
-    if(0 > setsockopt(context->serverContext.serviceDiscoverySocket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)))
-    {
-    	perror("setsockopt 1");
-    	exit(1);
-    }
+  struct ip_mreq mreq;
+  context->serverContext.serviceDiscoverySocket = socket(AF_INET, SOCK_DGRAM, 0);
+  unsigned int yes = 1;
+  if(0 > setsockopt(context->serverContext.serviceDiscoverySocket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)))
+  {
+  	perror("setsockopt 1");
+  	exit(1);
+  }
 
-    memset(&addr, 0, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    addr.sin_port = htons(context->serviceDiscoveryPortNo);
+  memset(&addr, 0, sizeof(addr));
+  addr.sin_family = AF_INET;
+  addr.sin_addr.s_addr = htonl(INADDR_ANY);
+  addr.sin_port = htons(context->serviceDiscoveryPortNo);
 
-    if(0 > bind(context->serverContext.serviceDiscoverySocket, (struct sockaddr*)&addr, sizeof(addr)))
-    {
-    	perror("bind");
-    	exit(1);
-    }
+  if(0 > bind(context->serverContext.serviceDiscoverySocket, (struct sockaddr*)&addr, sizeof(addr)))
+  {
+  	perror("bind");
+  	exit(1);
+  }
 
-    mreq.imr_multiaddr.s_addr = inet_addr(MULTICAST_GROUP);
-    mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+  mreq.imr_multiaddr.s_addr = inet_addr(MULTICAST_GROUP);
+  mreq.imr_interface.s_addr = htonl(INADDR_ANY);
 
-    setsockopt(context->serverContext.serviceDiscoverySocket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq));
+  setsockopt(context->serverContext.serviceDiscoverySocket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq));
 
-	struct timeval timeout;
+  struct timeval timeout;
 	timeout.tv_sec = 0;
 	timeout.tv_usec = 1;
 
