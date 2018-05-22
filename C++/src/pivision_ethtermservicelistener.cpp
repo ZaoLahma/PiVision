@@ -2,6 +2,8 @@
 #include "jobdispatcher.h"
 #include "pivision_events.h"
 #include "pivision_macros.h"
+#include "pivision_threadmodel.h"
+#include "pivision_ethtermconnection.h"
 
 #include <sys/types.h>
 #include <ifaddrs.h>
@@ -201,7 +203,7 @@ void PiVisionEthTermServiceListener::handleNewConnections()
 	FD_SET(serverSocket, &acceptFds);
 
   tv.tv_sec = 0;
-  tv.tv_usec = 500000;  
+  tv.tv_usec = 500000;
 
 	select(serverSocket + 1, &acceptFds, 0, 0, &tv);
 
@@ -213,6 +215,9 @@ void PiVisionEthTermServiceListener::handleNewConnections()
 		tv.tv_usec = 500000;
 		setsockopt(clientSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
 		(void) printf("Accepted new connection\n");
+
+    auto newConnection = std::make_shared<PiVisionEthTermConnection>(serviceNo, clientSocket);
+    JobDispatcher::GetApi()->ExecuteJobInGroup(newConnection, PIVISION_CONNECTIONS_THREAD_ID);
 	}
 }
 

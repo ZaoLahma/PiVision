@@ -122,11 +122,11 @@ protected:
 
 public:
   PiVisionNewDataInd(const PiVisionDataBuf _buf) :
-  imageData(_buf)
+  dataBuf(_buf)
   {
 
   }
-  const PiVisionDataBuf imageData;
+  const PiVisionDataBuf dataBuf;
 };
 
 class PiVisionImageData : public EventDataBase

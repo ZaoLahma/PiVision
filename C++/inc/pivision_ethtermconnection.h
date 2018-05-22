@@ -9,6 +9,7 @@ class PiVisionEthTermConnection : public JobBase, public EventListenerBase
 {
 private:
   void Receive(const uint32_t numBytesToGet, PiVisionDataBuf& dataBuf);
+  void Send(PiVisionDataBuf& dataBuf);
   bool active;
   const uint32_t serviceNo;
   const int32_t socketFd;

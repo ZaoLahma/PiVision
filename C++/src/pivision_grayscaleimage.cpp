@@ -24,6 +24,8 @@ void PiVisionGrayscaleImage::HandleEvent(const uint32_t eventNo, std::shared_ptr
       */
 
       auto imageData = std::static_pointer_cast<PiVisionImageData>(dataPtr);
+      auto newData = std::make_shared<PiVisionNewDataInd>(imageData->imageData);
+      JobDispatcher::GetApi()->RaiseEvent(PIVISION_BW_IMAGE_SERVICE, newData);
       JobDispatcher::GetApi()->Log("PiVisionGrayscaleImage received color image of size: (%u, %u)",
                                    imageData->xSize,
                                    imageData->ySize);
@@ -36,6 +38,8 @@ void PiVisionGrayscaleImage::HandleEvent(const uint32_t eventNo, std::shared_ptr
       {
         JobDispatcher::GetApi()->Log("PiVisionGrayscaleImage found color image service");
         JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_COLOR_IMAGE_SERVICE, this);
+        auto serviceProvided = std::make_shared<PiVisionServiceAvailableInd>(PIVISION_BW_IMAGE_SERVICE);
+        JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_SERVICE_PROVIDED_IND, serviceProvided);
       }
     }
     break;

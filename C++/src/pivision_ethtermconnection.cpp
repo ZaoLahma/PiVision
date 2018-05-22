@@ -12,6 +12,7 @@ active(true),
 serviceNo(_serviceNo),
 socketFd(_socketFd)
 {
+  JobDispatcher::GetApi()->Log("New connection for service: %u", serviceNo);
   JobDispatcher::GetApi()->SubscribeToEvent(serviceNo, this);
   JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_STOP, this);
 }
@@ -53,6 +54,48 @@ void PiVisionEthTermConnection::Receive(const uint32_t numBytesToGet, PiVisionDa
   }
 }
 
+void PiVisionEthTermConnection::Send(PiVisionDataBuf& dataBuf)
+{
+  const uint32_t MAX_CHUNK_SIZE = 256u;
+  unsigned char buffer[MAX_CHUNK_SIZE];
+
+  uint32_t numBytesSent = 0u;
+  uint32_t numBytesToSend = dataBuf.size();
+  while(numBytesSent < numBytesToSend)
+  {
+    uint32_t maxChunkSize = std::min(MAX_CHUNK_SIZE, numBytesToSend - numBytesSent);
+    (void) memset(buffer, 0, sizeof(buffer));
+
+    uint32_t bufferIndex = 0u;
+    for(uint32_t i = numBytesSent; i < numBytesSent + maxChunkSize; ++i)
+    {
+      buffer[bufferIndex] = dataBuf[i];
+      bufferIndex += 1u;
+    }
+
+    JobDispatcher::GetApi()->Log("Trying to send %u bytes, numBytesToSend: %u", maxChunkSize, numBytesToSend);
+
+    int32_t chunkSize = send(socketFd,
+                             buffer,
+                             maxChunkSize,
+                             0);
+
+    JobDispatcher::GetApi()->Log("Sent %d bytes", chunkSize);
+
+    if(chunkSize > 0)
+    {
+      numBytesSent += chunkSize;
+    }
+    else
+    {
+      // active = false;
+      // JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_STOP, nullptr);
+      break;
+    }
+  }
+  JobDispatcher::GetApi()->Log("Send return");
+}
+
 void PiVisionEthTermConnection::Execute()
 {
   while(active)
@@ -83,13 +126,30 @@ void PiVisionEthTermConnection::Execute()
 
 void PiVisionEthTermConnection::HandleEvent(const uint32_t eventNo, std::shared_ptr<EventDataBase> dataPtr)
 {
-  PIVISION_UNUSED_ARG(dataPtr);
-  switch(eventNo)
+  if(serviceNo == eventNo)
   {
-    case PIVISION_EVENT_STOP:
-      active = false;
-    break;
-    default:
-    break;
+    auto newData = std::static_pointer_cast<PiVisionNewDataInd>(dataPtr);
+    PiVisionDataBuf data;
+    uint32_t dataSize = newData->dataBuf.size();
+    JobDispatcher::GetApi()->Log("dataSize: 0x%X", dataSize);
+    for(uint32_t i = 0u; i < sizeof(uint32_t); ++i)
+    {
+      uint8_t byte = 0x000000FF & (dataSize >> i * 8);
+      data.push_back(byte);
+      JobDispatcher::GetApi()->Log("byte: 0x%X", byte);
+    }
+
+    Send(data);
+  }
+  else
+  {
+    switch(eventNo)
+    {
+      case PIVISION_EVENT_STOP:
+        active = false;
+      break;
+      default:
+      break;
+    }
   }
 }

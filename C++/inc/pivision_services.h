@@ -3,6 +3,6 @@
 
 const uint32_t PIVISION_CAMERA_SERVICE      = 3370u;
 const uint32_t PIVISION_COLOR_IMAGE_SERVICE = 3380u;
-const uint32_t PIVISION_BW_IMAGE_SERVICE    = 3381u;
+const uint32_t PIVISION_BW_IMAGE_SERVICE    = 3385u;
 
 #endif
