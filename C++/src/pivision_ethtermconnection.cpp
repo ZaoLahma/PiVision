@@ -48,8 +48,10 @@ void PiVisionEthTermConnection::Receive(const uint32_t numBytesToGet, PiVisionDa
     }
     else
     {
-      active = false;
-      break;
+      if(!active)
+      {
+        break;
+      }
     }
   }
 }
@@ -110,6 +112,8 @@ void PiVisionEthTermConnection::Execute()
     {
       payloadLength = payloadLength | (dataBuf[i] << (i * 8u));
     }
+
+    JobDispatcher::GetApi()->Log("payloadLength: %u", payloadLength);
 
     dataBuf.clear();
     Receive(payloadLength, dataBuf);

@@ -57,7 +57,7 @@ void PiVisionFrameCoord::HandleEvent(const uint32_t eventNo,
 
       for(uint32_t i = 0u; i < sizeof(xSize); ++i)
       {
-        xSize = xSize | (newDataInd->imageData[i] << (shiftIndex * 8u));
+        xSize = xSize | (newDataInd->dataBuf[i] << (shiftIndex * 8u));
         shiftIndex += 1u;
       }
 
@@ -65,18 +65,22 @@ void PiVisionFrameCoord::HandleEvent(const uint32_t eventNo,
 
       for(uint32_t i = sizeof(xSize); i < sizeof(xSize) + sizeof(ySize); ++i)
       {
-        ySize = ySize | (newDataInd->imageData[i] << (shiftIndex * 8u));
+        ySize = ySize | (newDataInd->dataBuf[i] << (shiftIndex * 8u));
         shiftIndex += 1u;
       }
 
       PiVisionDataBuf pixelData;
 
-      for(uint32_t i = IMAGE_HEADER_SIZE; i < newDataInd->imageData.size(); ++i)
+      JobDispatcher::GetApi()->Log("newDataInd->imageData.size(): %u", newDataInd->dataBuf.size());
+
+      for(uint32_t i = IMAGE_HEADER_SIZE; i < newDataInd->dataBuf.size(); ++i)
       {
-        pixelData.push_back(newDataInd->imageData[i]);
+        pixelData.push_back(newDataInd->dataBuf[i]);
       }
 
-      auto imageData = std::make_shared<PiVisionImageData>(xSize, ySize, pixelData);
+      JobDispatcher::GetApi()->Log("pixelData.size(): %u", pixelData.size());
+
+      auto imageData = std::make_shared<PiVisionImageData>(currFrame, xSize, ySize, pixelData);
 
       currFrame += 1u;
       JobDispatcher::GetApi()->Log("New frame: %u", currFrame);
