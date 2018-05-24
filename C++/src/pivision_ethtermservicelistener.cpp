@@ -78,7 +78,11 @@ void PiVisionEthTermServiceListener::initiateServiceDiscoverySocket()
   mreq.imr_multiaddr.s_addr = inet_addr(MULTICAST_GROUP);
   mreq.imr_interface.s_addr = htonl(INADDR_ANY);
 
-  setsockopt(serviceDiscoverySocket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq));
+  if(0 != setsockopt(serviceDiscoverySocket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)))
+  {
+    perror("setsockopt");
+    exit(1);
+  }
 
   struct timeval timeout;
 	timeout.tv_sec = 0;
@@ -169,6 +173,8 @@ void PiVisionEthTermServiceListener::handleNewServiceDiscoveryRequests()
               								 &addrLen);
 
 	char header[] = "WHERE_IS_";
+
+  JobDispatcher::GetApi()->Log("handleNewServiceDiscoveryRequests for service %u received %d bytes", serviceNo, bytesReceived);
 
 	if(bytesReceived > (int)strlen(header))
 	{

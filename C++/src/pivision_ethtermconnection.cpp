@@ -56,7 +56,7 @@ void PiVisionEthTermConnection::Receive(const uint32_t numBytesToGet, PiVisionDa
   }
 }
 
-void PiVisionEthTermConnection::Send(PiVisionDataBuf& dataBuf)
+void PiVisionEthTermConnection::Send(const PiVisionDataBuf& dataBuf)
 {
   const uint32_t MAX_CHUNK_SIZE = 256u;
   unsigned char buffer[MAX_CHUNK_SIZE];
@@ -75,14 +75,14 @@ void PiVisionEthTermConnection::Send(PiVisionDataBuf& dataBuf)
       bufferIndex += 1u;
     }
 
-    JobDispatcher::GetApi()->Log("Trying to send %u bytes, numBytesToSend: %u for service %u", maxChunkSize, numBytesToSend, serviceNo);
+  //  JobDispatcher::GetApi()->Log("Trying to send %u bytes, numBytesToSend: %u (total %u bytes sent) for service %u", maxChunkSize, numBytesToSend, numBytesSent, serviceNo);
 
     int32_t chunkSize = send(socketFd,
                              buffer,
                              maxChunkSize,
                              0);
 
-    JobDispatcher::GetApi()->Log("Sent %d bytes", chunkSize);
+  //  JobDispatcher::GetApi()->Log("Sent %d bytes", chunkSize);
 
     if(chunkSize >= 0)
     {
@@ -144,7 +144,7 @@ void PiVisionEthTermConnection::HandleEvent(const uint32_t eventNo, std::shared_
       JobDispatcher::GetApi()->Log("byte: 0x%X", byte);
     }
 
-    Send(data);
+    Send(newData->dataBuf);
   }
   else
   {

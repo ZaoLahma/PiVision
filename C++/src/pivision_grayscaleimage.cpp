@@ -2,6 +2,7 @@
 #include "jobdispatcher.h"
 #include "pivision_events.h"
 #include "pivision_services.h"
+#include "pivision_grayscaleimagejob.h"
 
 PiVisionGrayscaleImage::PiVisionGrayscaleImage()
 {
@@ -26,12 +27,12 @@ void PiVisionGrayscaleImage::HandleEvent(const uint32_t eventNo, std::shared_ptr
       auto imageData = std::static_pointer_cast<PiVisionImageData>(dataPtr);
 
       JobDispatcher::GetApi()->Log("PiVisionGrayscaleImage handling frame %u", imageData->frameNo);
-
-      auto newData = std::make_shared<PiVisionNewDataInd>(imageData->imageData);
-      JobDispatcher::GetApi()->RaiseEvent(PIVISION_BW_IMAGE_SERVICE_TX, newData);
       JobDispatcher::GetApi()->Log("PiVisionGrayscaleImage received color image of size: (%u, %u)",
                                    imageData->xSize,
                                    imageData->ySize);
+
+      auto grayscaleJob = std::make_shared<PiVisionGrayscaleImageJob>(imageData);
+      JobDispatcher::GetApi()->ExecuteJob(grayscaleJob);
     }
     break;
     case PIVISION_EVENT_SERVICE_AVAILABLE_IND:

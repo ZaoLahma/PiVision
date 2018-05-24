@@ -1,7 +1,9 @@
 #ifndef HEADER_PIVISION_EVENTS
 #define HEADER_PIVISION_EVENTS
 
-#include <string.h>
+#include <string>
+#include <stdint.h>
+#include <vector>
 
 #include "eventdatabase.h"
 #include "pivision_image_constants.h"
