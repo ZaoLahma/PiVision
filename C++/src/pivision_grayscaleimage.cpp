@@ -7,7 +7,7 @@ PiVisionGrayscaleImage::PiVisionGrayscaleImage()
 {
   JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_SERVICE_AVAILABLE_IND, this);
 
-  auto subscribeService = std::make_shared<PiVisionSubscribeServiceInd>(PIVISION_COLOR_IMAGE_SERVICE);
+  auto subscribeService = std::make_shared<PiVisionSubscribeServiceInd>(PIVISION_COLOR_IMAGE_SERVICE_RX);
   JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_SUBSCRIBE_SERVICE_IND, subscribeService);
 }
 
@@ -15,7 +15,7 @@ void PiVisionGrayscaleImage::HandleEvent(const uint32_t eventNo, std::shared_ptr
 {
   switch(eventNo)
   {
-    case PIVISION_COLOR_IMAGE_SERVICE:
+    case PIVISION_COLOR_IMAGE_SERVICE_RX:
     {
       /*
         TODO:
@@ -24,8 +24,11 @@ void PiVisionGrayscaleImage::HandleEvent(const uint32_t eventNo, std::shared_ptr
       */
 
       auto imageData = std::static_pointer_cast<PiVisionImageData>(dataPtr);
+
+      JobDispatcher::GetApi()->Log("PiVisionGrayscaleImage handling frame %u", imageData->frameNo);
+
       auto newData = std::make_shared<PiVisionNewDataInd>(imageData->imageData);
-      JobDispatcher::GetApi()->RaiseEvent(PIVISION_BW_IMAGE_SERVICE, newData);
+      JobDispatcher::GetApi()->RaiseEvent(PIVISION_BW_IMAGE_SERVICE_TX, newData);
       JobDispatcher::GetApi()->Log("PiVisionGrayscaleImage received color image of size: (%u, %u)",
                                    imageData->xSize,
                                    imageData->ySize);
@@ -34,11 +37,11 @@ void PiVisionGrayscaleImage::HandleEvent(const uint32_t eventNo, std::shared_ptr
     case PIVISION_EVENT_SERVICE_AVAILABLE_IND:
     {
       auto serviceAvailable = std::static_pointer_cast<PiVisionServiceAvailableInd>(dataPtr);
-      if(PIVISION_COLOR_IMAGE_SERVICE == serviceAvailable->serviceNo)
+      if(PIVISION_COLOR_IMAGE_SERVICE_RX == serviceAvailable->serviceNo)
       {
         JobDispatcher::GetApi()->Log("PiVisionGrayscaleImage found color image service");
-        JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_COLOR_IMAGE_SERVICE, this);
-        auto serviceProvided = std::make_shared<PiVisionServiceAvailableInd>(PIVISION_BW_IMAGE_SERVICE);
+        JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_COLOR_IMAGE_SERVICE_RX, this);
+        auto serviceProvided = std::make_shared<PiVisionServiceAvailableInd>(PIVISION_BW_IMAGE_SERVICE_RX);
         JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_SERVICE_PROVIDED_IND, serviceProvided);
       }
     }

@@ -13,13 +13,13 @@ serviceNo(_serviceNo),
 socketFd(_socketFd)
 {
   JobDispatcher::GetApi()->Log("New connection for service: %u", serviceNo);
-  JobDispatcher::GetApi()->SubscribeToEvent(serviceNo, this);
+  JobDispatcher::GetApi()->SubscribeToEvent(serviceNo + 1u, this);
   JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_STOP, this);
 }
 
 PiVisionEthTermConnection::~PiVisionEthTermConnection()
 {
-  JobDispatcher::GetApi()->UnsubscribeToEvent(serviceNo, this);
+  JobDispatcher::GetApi()->UnsubscribeToEvent(serviceNo + 1u, this);
   JobDispatcher::GetApi()->UnsubscribeToEvent(PIVISION_EVENT_STOP, this);
 }
 
@@ -75,7 +75,7 @@ void PiVisionEthTermConnection::Send(PiVisionDataBuf& dataBuf)
       bufferIndex += 1u;
     }
 
-    JobDispatcher::GetApi()->Log("Trying to send %u bytes, numBytesToSend: %u", maxChunkSize, numBytesToSend);
+    JobDispatcher::GetApi()->Log("Trying to send %u bytes, numBytesToSend: %u for service %u", maxChunkSize, numBytesToSend, serviceNo);
 
     int32_t chunkSize = send(socketFd,
                              buffer,
@@ -84,15 +84,16 @@ void PiVisionEthTermConnection::Send(PiVisionDataBuf& dataBuf)
 
     JobDispatcher::GetApi()->Log("Sent %d bytes", chunkSize);
 
-    if(chunkSize > 0)
+    if(chunkSize >= 0)
     {
       numBytesSent += chunkSize;
     }
     else
     {
-      // active = false;
-      // JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_STOP, nullptr);
-      break;
+      if(!active)
+      {
+        break;
+      }
     }
   }
   JobDispatcher::GetApi()->Log("Send return");
@@ -130,12 +131,12 @@ void PiVisionEthTermConnection::Execute()
 
 void PiVisionEthTermConnection::HandleEvent(const uint32_t eventNo, std::shared_ptr<EventDataBase> dataPtr)
 {
-  if(serviceNo == eventNo)
+  if(serviceNo + 1u == eventNo)
   {
     auto newData = std::static_pointer_cast<PiVisionNewDataInd>(dataPtr);
     PiVisionDataBuf data;
     uint32_t dataSize = newData->dataBuf.size();
-    JobDispatcher::GetApi()->Log("dataSize: 0x%X", dataSize);
+    JobDispatcher::GetApi()->Log("Service: %u dataSize: 0x%X", serviceNo, dataSize);
     for(uint32_t i = 0u; i < sizeof(uint32_t); ++i)
     {
       uint8_t byte = 0x000000FF & (dataSize >> i * 8);

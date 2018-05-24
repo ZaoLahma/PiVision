@@ -11,9 +11,9 @@ cameraServiceAvailable(false)
     JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_SERVICE_AVAILABLE_IND, this);
     JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_SERVICE_UNAVAILABLE_IND, this);
     JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_STOP, this);
-    JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_CAMERA_SERVICE, this);
+    JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_CAMERA_SERVICE_RX, this);
 
-    auto subscribeService = std::make_shared<PiVisionSubscribeServiceInd>(PIVISION_CAMERA_SERVICE);
+    auto subscribeService = std::make_shared<PiVisionSubscribeServiceInd>(PIVISION_CAMERA_SERVICE_RX);
     JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_SUBSCRIBE_SERVICE_IND, subscribeService);
 }
 
@@ -25,7 +25,7 @@ void PiVisionFrameCoord::HandleEvent(const uint32_t eventNo,
     case PIVISION_EVENT_SERVICE_UNAVAILABLE_IND:
     {
       auto serviceUnavailable = std::static_pointer_cast<PiVisionServiceUnavailableInd>(dataPtr);
-      if(PIVISION_CAMERA_SERVICE == serviceUnavailable->serviceNo)
+      if(PIVISION_CAMERA_SERVICE_RX == serviceUnavailable->serviceNo)
       {
         JobDispatcher::GetApi()->Log("PiVisionFrameCoord lost camera. Abort.");
         JobDispatcher::GetApi()->RaiseEventIn(PIVISION_EVENT_STOP, nullptr, 500u);
@@ -35,18 +35,19 @@ void PiVisionFrameCoord::HandleEvent(const uint32_t eventNo,
     case PIVISION_EVENT_SERVICE_AVAILABLE_IND:
     {
       auto service = std::static_pointer_cast<PiVisionServiceAvailableInd>(dataPtr);
-      if(PIVISION_CAMERA_SERVICE == service->serviceNo)
+      if(PIVISION_CAMERA_SERVICE_RX == service->serviceNo)
       {
         JobDispatcher::GetApi()->Log("PiVisionFrameCoord connected to camera");
         cameraServiceAvailable = true;
 
-        auto serviceProvided = std::make_shared<PiVisionServiceAvailableInd>(PIVISION_COLOR_IMAGE_SERVICE);
+        auto serviceProvided = std::make_shared<PiVisionServiceAvailableInd>(PIVISION_COLOR_IMAGE_SERVICE_RX);
         JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_SERVICE_PROVIDED_IND, serviceProvided);
       }
     }
     break;
-    case PIVISION_CAMERA_SERVICE:
+    case PIVISION_CAMERA_SERVICE_RX:
     {
+      JobDispatcher::GetApi()->Log("FrameCoord: New frame: %u", currFrame);
       auto newDataInd = std::static_pointer_cast<PiVisionNewDataInd>(dataPtr);
 
       const uint32_t IMAGE_HEADER_SIZE = 2u * sizeof(uint16_t);
@@ -71,20 +72,22 @@ void PiVisionFrameCoord::HandleEvent(const uint32_t eventNo,
 
       PiVisionDataBuf pixelData;
 
-      JobDispatcher::GetApi()->Log("newDataInd->imageData.size(): %u", newDataInd->dataBuf.size());
+      JobDispatcher::GetApi()->Log("FrameCoord: newDataInd->imageData.size(): %u", newDataInd->dataBuf.size());
 
       for(uint32_t i = IMAGE_HEADER_SIZE; i < newDataInd->dataBuf.size(); ++i)
       {
         pixelData.push_back(newDataInd->dataBuf[i]);
       }
 
-      JobDispatcher::GetApi()->Log("pixelData.size(): %u", pixelData.size());
+      JobDispatcher::GetApi()->Log("FrameCoord: pixelData.size(): %u", pixelData.size());
 
       auto imageData = std::make_shared<PiVisionImageData>(currFrame, xSize, ySize, pixelData);
 
       currFrame += 1u;
-      JobDispatcher::GetApi()->Log("New frame: %u", currFrame);
-      JobDispatcher::GetApi()->RaiseEvent(PIVISION_COLOR_IMAGE_SERVICE, imageData);
+      JobDispatcher::GetApi()->RaiseEvent(PIVISION_COLOR_IMAGE_SERVICE_RX, imageData);
+
+      auto imageTx = std::make_shared<PiVisionNewDataInd>(pixelData);
+      JobDispatcher::GetApi()->RaiseEvent(PIVISION_COLOR_IMAGE_SERVICE_TX, imageTx);
     }
     break;
     case PIVISION_EVENT_STOP:
