@@ -6,13 +6,10 @@
 
 #define ACK_BUF_SIZE    1u
 
-#define IMAGE_TYPE_HEADER_OFFSET   0u
-#define IMAGE_SIZE_HEADER_OFFSET   1u
-#define IMAGE_X_SIZE_HEADER_OFFSET 5u
-#define IMAGE_Y_SIZE_HEADER_OFFSET 7u
-#define BUF_HEADER_SIZE            9u /* 1 + 4 + 2 + 2 */
-#define GRAY_SCALE_IMAGE_HEADER    0x0
-#define COLOR_IMAGE_HEADER         0x1
+#define IMAGE_SIZE_HEADER_OFFSET   0u
+#define IMAGE_X_SIZE_HEADER_OFFSET 4u
+#define IMAGE_Y_SIZE_HEADER_OFFSET 6u
+#define BUF_HEADER_SIZE            8u /* 4 + 2 + 2 */
 
 enum PiVisImageDataTLState
 {
@@ -71,8 +68,6 @@ void IMGDATATL_sendGrayscaleImage(unsigned char* buf, unsigned int size, unsigne
 		const unsigned int totSize = BUF_HEADER_SIZE + size;
 		unsigned char bufToSend[totSize];
 		memset(bufToSend, 0, sizeof(bufToSend));
-
-		bufToSend[IMAGE_TYPE_HEADER_OFFSET] = GRAY_SCALE_IMAGE_HEADER;
 
 		(void) memcpy(&bufToSend[IMAGE_SIZE_HEADER_OFFSET],   &size,  sizeof(size));
 		(void) memcpy(&bufToSend[IMAGE_X_SIZE_HEADER_OFFSET], &xSize, sizeof(xSize));

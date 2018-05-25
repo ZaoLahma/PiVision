@@ -5,17 +5,15 @@ import struct
 import PiVisConstants
 
 class PiVisClient:
-    def __init__(self, scheduler, portNo, imageSize):
+    def __init__(self, scheduler, portNo):
         self.serviceNo = -1
         self.portNo = portNo
-        self.serviceNo = PiVisConstants.DISCOVER_IMAGE_DATA_SERVICE
         self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.serviceDiscoverySocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         self.serviceDiscoverySocket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
         self.stateIndex = 0
         self.states = [self.findService, self.connect, self.connected]
         self.piVisServerAddress = ""
-        self.imageSize = imageSize
         self.data = []
         scheduler.registerRunnable(self.run)
 
@@ -23,7 +21,7 @@ class PiVisClient:
         data = bytearray()
         address = bytearray()
         data.extend(map(ord, PiVisConstants.SERVICE_DISCOVER_REQUEST_HEADER + str(self.portNo)))
-        self.serviceDiscoverySocket.sendto(data,  ("224.1.1.1", self.serviceNo))
+        self.serviceDiscoverySocket.sendto(data,  ("224.1.1.1", self.portNo))
         self.serviceDiscoverySocket.settimeout(1)
         try:
             address = self.serviceDiscoverySocket.recv(13)
@@ -69,19 +67,18 @@ class PiVisClient:
         return data
 
     def receive(self):
-        headerSize = 9 #1 byte image type, 4 bytes image size, 2 bytes xSize, 2 bytes ySize
+        headerSize = 8 # 4 bytes image size, 2 bytes xSize, 2 bytes ySize
+
+        print("receive header")
 
         header = self.__receiveInternal(headerSize)
 
-        imageSize = bytearray(header[1:5])
+        imageSize = bytearray(header[0:4])
         imageSize = struct.unpack("<L", imageSize)[0]
-
-        imageType = header[0:1]
 
         receiveBuf = self.__receiveInternal(imageSize)
 
         tmpBuf = []
-        tmpBuf += imageType
         tmpBuf += receiveBuf
         self.data = tmpBuf
 

@@ -89,8 +89,7 @@ if __name__ == "__main__":
     guiSchedThread = PiVisGuiSchedThread(guiScheduler)
     clientSchedThread = PiVisGuiSchedThread(clientScheduler)
     client = PiVisClient(clientScheduler,
-                         PiVisConstants.IMAGE_DATA_SERVICE,
-                         PiVisConstants.GRAYSCALE_IMAGE_BYTE_SIZE)
+                         PiVisConstants.IMAGE_DATA_SERVICE)
     gui = PiVisGui(guiScheduler, clientScheduler, client)
     guiSchedThread.start()
     clientSchedThread.start()
