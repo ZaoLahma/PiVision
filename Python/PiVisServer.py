@@ -81,10 +81,9 @@ class PiVisServer:
     def send(self, data):
         for connection in self.connections:
             try:
-                if self.portNo == PiVisConstants.CAMERA_SERVICE:
-                    print(len(data))
-                    dataSize = (len(data)).to_bytes(4, byteorder='little')
-                    connection[0].sendall(dataSize)
+                print(len(data))
+                dataSize = (len(data - 4)).to_bytes(4, byteorder='little')
+                connection[0].sendall(dataSize)
                 connection[0].sendall(data)
             except Exception as e:
                 print("Disconnecting connection due to: " + str(e))
