@@ -34,8 +34,10 @@ static unsigned int currState;
 
 static int socketFd = -1;
 static int serviceDiscoverySocket = -1;
+static char camBufHeader[CAMERA_BUF_HEADER_SIZE] = {0u};
 static char buffer[(COLOR_IMAGE_SIZE)];
-static unsigned int bufferIndex = 0;
+static unsigned int bufferIndex = 0u;
+static unsigned int headerIndex = 0u;
 
 static CLIENT_state state[] =
 {
@@ -95,23 +97,37 @@ static void stateConnecting(void)
 
 static void stateConnected(void)
 {
-	int numBytesReceived = socket_receive(socketFd, &buffer[bufferIndex], (COLOR_IMAGE_SIZE) - bufferIndex);
+  if(headerIndex < CAMERA_BUF_HEADER_SIZE)
+  {
+    int numBytesReceived = socket_receive(socketFd, &camBufHeader[headerIndex], CAMERA_BUF_HEADER_SIZE);
 
-	if(-1 != numBytesReceived)
-	{
-		bufferIndex += numBytesReceived;
-	}
-	else
-	{
-		currState = 0u;
-		memset(buffer, 0u, sizeof(buffer));
-	}
+    if(-1 != numBytesReceived)
+    {
+      headerIndex += numBytesReceived;
+      (void) printf("headerIndex: %u\n", headerIndex);
+    }
+  }
+  else
+  {
+  	int numBytesReceived = socket_receive(socketFd, &buffer[bufferIndex], (COLOR_IMAGE_SIZE) - bufferIndex);
 
-	if(bufferIndex == (COLOR_IMAGE_SIZE))
-	{
-		bufferIndex = 0;
-		currState += 1u;
-	}
+  	if(-1 != numBytesReceived)
+  	{
+  		bufferIndex += numBytesReceived;
+  	}
+  	else
+  	{
+  		currState = 0u;
+  		memset(buffer, 0u, sizeof(buffer));
+  	}
+
+  	if(bufferIndex == (COLOR_IMAGE_SIZE))
+  	{
+  		bufferIndex = 0u;
+      headerIndex = 0u;
+  		currState += 1u;
+  	}
+  }
 }
 
 static void processingFrame(void)

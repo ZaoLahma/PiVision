@@ -5,9 +5,6 @@ from PiVisScheduler import PiVisScheduler
 from PiVisClient import PiVisClient
 import time
 
-GRAY_SCALE_IMAGE_TYPE = 0
-COLOR_IMAGE_TYPE      = 1
-
 class PiVisGuiSchedThread(threading.Thread):
     def __init__(self, guiScheduler):
         threading.Thread.__init__(self)
@@ -62,9 +59,9 @@ class PiVisGui():
     def run(self):
         image = self.client.getData()
         if len(image) > 1:
-            if image[0] == GRAY_SCALE_IMAGE_TYPE:
+            if image[0] == PiVisConstants.GRAY_SCALE_IMAGE_TYPE:
                 self.showGrayScaleImage(image[1:len(image)])
-            elif image[0] == COLOR_IMAGE_TYPE:
+            elif image[0] == PiVisConstants.COLOR_IMAGE_TYPE:
                 self.showImage(image[1:len(image)])
             ackData = bytearray();
             ackData.extend([self.frameNo])

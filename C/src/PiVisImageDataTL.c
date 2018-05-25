@@ -61,8 +61,6 @@ void IMGDATATL_init(void)
 
 void IMGDATATL_sendGrayscaleImage(unsigned char* buf, unsigned int size, unsigned short xSize, unsigned short ySize)
 {
-	//TODO: Fill header with relevant data before sending
-
 	if(SEND_DATA == state)
 	{
 		const unsigned int totSize = BUF_HEADER_SIZE + size;

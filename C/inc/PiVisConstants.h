@@ -6,6 +6,8 @@
 #define IMAGE_X_SIZE     (640)
 #define IMAGE_Y_SIZE     (480)
 
+#define CAMERA_BUF_HEADER_SIZE (8u) /* 4 byte data size, 2 byte xSize, 2 byte ySize */
+
 #define COLOR_IMAGE_SIZE     ((IMAGE_X_SIZE) * (IMAGE_Y_SIZE) * 3)
 #define GRAYSCALE_IMAGE_SIZE ((IMAGE_X_SIZE) * (IMAGE_Y_SIZE))
 
