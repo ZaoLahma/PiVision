@@ -15,11 +15,6 @@ class PiVisServer:
         self.serviceDiscovery = -1
         self.portNo = portNo
         self.serviceDiscovery = serviceDiscovery
-        if self.portNo == PiVisConstants.RAW_IMAGE_SERVICE:
-            print("Listening for RAW_IMAGE_SERVICE connections")
-            self.serviceDiscovery = PiVisConstants.DISCOVER_RAW_IMAGE_SERVICE
-        elif self.portNo == PiVisConstants.IMAGE_DATA_SERVICE:
-            self.serviceDiscovery = PiVisConstants.DISCOVER_IMAGE_DATA_SERVICE
         self.host = getOwnIp()
         self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connections = []
