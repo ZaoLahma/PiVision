@@ -4,12 +4,15 @@
 #include "PiVisScheduler.h"
 #include <string.h>
 
-#define ACK_BUF_SIZE    1u
+#define ACK_BUF_SIZE            (2u)
+#define ACK_BUF_FRAME_NO_OFFSET (1u)
 
 #define IMAGE_SIZE_HEADER_OFFSET   0u
 #define IMAGE_X_SIZE_HEADER_OFFSET 4u
 #define IMAGE_Y_SIZE_HEADER_OFFSET 6u
-#define BUF_HEADER_SIZE            8u /* 4 + 2 + 2 */
+#define BUF_HEADER_SIZE            4u /* 4 */
+
+#define UNUSED_ARG(arg) arg = arg
 
 enum PiVisImageDataTLState
 {
@@ -23,7 +26,7 @@ static enum PiVisImageDataTLState state;
 
 static unsigned int numDroppedFrames;
 static unsigned char frameNo;
-static unsigned char ackBuf;
+static unsigned char ackBuf[ACK_BUF_SIZE];
 
 static void run(void);
 
@@ -33,7 +36,7 @@ static void run(void)
 
 	if(-1 != receivedBytes)
 	{
-		if(ackBuf == frameNo)
+		if(ackBuf[ACK_BUF_FRAME_NO_OFFSET] == frameNo)
 		{
 			state = SEND_DATA;
 			frameNo += 1;
@@ -61,6 +64,9 @@ void IMGDATATL_init(void)
 
 void IMGDATATL_sendGrayscaleImage(unsigned char* buf, unsigned int size, unsigned short xSize, unsigned short ySize)
 {
+  UNUSED_ARG(xSize);
+  UNUSED_ARG(ySize);
+
 	if(SEND_DATA == state)
 	{
 		const unsigned int totSize = BUF_HEADER_SIZE + size;
@@ -68,8 +74,6 @@ void IMGDATATL_sendGrayscaleImage(unsigned char* buf, unsigned int size, unsigne
 		memset(bufToSend, 0, sizeof(bufToSend));
 
 		(void) memcpy(&bufToSend[IMAGE_SIZE_HEADER_OFFSET],   &size,  sizeof(size));
-		(void) memcpy(&bufToSend[IMAGE_X_SIZE_HEADER_OFFSET], &xSize, sizeof(xSize));
-		(void) memcpy(&bufToSend[IMAGE_Y_SIZE_HEADER_OFFSET], &xSize, sizeof(ySize));
 
 		(void) memcpy(&bufToSend[BUF_HEADER_SIZE], buf, size);
 

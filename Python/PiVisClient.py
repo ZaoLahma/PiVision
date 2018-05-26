@@ -67,16 +67,16 @@ class PiVisClient:
         return data
 
     def receive(self):
-        headerSize = 8 # 4 bytes image size, 2 bytes xSize, 2 bytes ySize
+        headerSize = 4 # 4 bytes image size
 
         header = self.__receiveInternal(headerSize)
 
         imageSize = bytearray(header[0:4])
         imageSize = struct.unpack("<L", imageSize)[0]
 
-        receiveBuf = self.__receiveInternal(imageSize)
+        print("imageSize: " + str(imageSize) + " " + str(hex(imageSize)))
 
-        print("imageSize: " + str(imageSize))
+        receiveBuf = self.__receiveInternal(imageSize)
 
         tmpBuf = []
         tmpBuf += [PiVisConstants.GRAY_SCALE_IMAGE_TYPE]

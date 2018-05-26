@@ -21,11 +21,10 @@ class PiVisCamera:
 
     def run(self):
         currImage = io.BytesIO()
-        if self.appendRes:
-            xRes = self.resolution[0]
-            yRes = self.resolution[1]
-            currImage.write(xRes.to_bytes(2, byteorder='little'))
-            currImage.write(yRes.to_bytes(2, byteorder='little'))
+        xRes = self.resolution[0]
+        yRes = self.resolution[1]
+        currImage.write(xRes.to_bytes(2, byteorder='little'))
+        currImage.write(yRes.to_bytes(2, byteorder='little'))
         self.camera.capture(currImage, 'rgb', use_video_port=True)
         self.server.send(bytearray(currImage.getvalue()))
 

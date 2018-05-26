@@ -18,18 +18,7 @@ void PiVisionGrayscaleImage::HandleEvent(const uint32_t eventNo, std::shared_ptr
   {
     case PIVISION_COLOR_IMAGE_SERVICE_RX:
     {
-      /*
-        TODO:
-        publish grayscale image service
-        convert color image to gracyscale
-      */
-
-      auto imageData = std::static_pointer_cast<PiVisionImageData>(dataPtr);
-
-      JobDispatcher::GetApi()->Log("PiVisionGrayscaleImage handling frame %u", imageData->frameNo);
-      JobDispatcher::GetApi()->Log("PiVisionGrayscaleImage received color image of size: (%u, %u)",
-                                   imageData->xSize,
-                                   imageData->ySize);
+      auto imageData = std::static_pointer_cast<PiVisionNewDataInd>(dataPtr);
 
       auto grayscaleJob = std::make_shared<PiVisionGrayscaleImageJob>(imageData);
       JobDispatcher::GetApi()->ExecuteJob(grayscaleJob);

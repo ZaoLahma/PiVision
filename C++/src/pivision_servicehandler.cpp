@@ -65,6 +65,7 @@ void PiVisionServiceHandler::HandleEvent(const uint32_t eventNo, std::shared_ptr
 
       if(REMOTE_SERVICE_DISCONNECTED == service->second)
       {
+        JobDispatcher::GetApi()->Log("Received ConnectToServiceCfm for service %u. Starting connection.", connectCfm->serviceNo);
         services[connectCfm->serviceNo] = connectCfm->serviceId;
         auto serviceAvail = std::make_shared<PiVisionServiceAvailableInd>(connectCfm->serviceNo);
         JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_SERVICE_AVAILABLE_IND, serviceAvail);

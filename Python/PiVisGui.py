@@ -64,6 +64,7 @@ class PiVisGui():
             elif image[0] == PiVisConstants.COLOR_IMAGE_TYPE:
                 self.showImage(image[1:len(image)])
             ackData = bytearray();
+            ackData.extend([1])
             ackData.extend([self.frameNo])
             self.client.send(ackData)
             self.frameNo += 1

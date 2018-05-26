@@ -8,12 +8,13 @@ class PiVisionGrayscaleImageJob : public JobBase
 {
 private:
   PiVisionGrayscaleImageJob();
-  const std::shared_ptr<PiVisionImageData> colorImage;
+  void ExtractImageProperties(uint16_t* xSize, uint16_t* ySize);
+  const std::shared_ptr<PiVisionNewDataInd> colorImage;
 
 protected:
 
 public:
-  PiVisionGrayscaleImageJob(const std::shared_ptr<PiVisionImageData> _colorImage);
+  PiVisionGrayscaleImageJob(const std::shared_ptr<PiVisionNewDataInd> _colorImage);
   void Execute();
 };
 

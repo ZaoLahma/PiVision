@@ -45,7 +45,7 @@ void PiVisionEthTermConnectService::FindService(void)
   memset(&addr,0,sizeof(addr));
   addr.sin_family = AF_INET;
   addr.sin_addr.s_addr = inet_addr(multicastGroup.c_str());
-  addr.sin_port = htons(serviceNo - 1u);
+  addr.sin_port = htons(serviceNo);
 
   int numBytesSent = sendto(serviceDiscoverySocket,
                             serviceDiscoverString.c_str(),

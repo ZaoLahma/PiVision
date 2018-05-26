@@ -58,6 +58,8 @@ void PiVisionEthTermConnection::Receive(const uint32_t numBytesToGet, PiVisionDa
 
 void PiVisionEthTermConnection::Send(const PiVisionDataBuf& dataBuf)
 {
+  std::unique_lock<std::mutex> lock(sendMutex);
+
   const uint32_t MAX_CHUNK_SIZE = 256u;
   unsigned char buffer[MAX_CHUNK_SIZE];
 
@@ -114,7 +116,7 @@ void PiVisionEthTermConnection::Execute()
       payloadLength = payloadLength | (dataBuf[i] << (i * 8u));
     }
 
-    JobDispatcher::GetApi()->Log("payloadLength: %u", payloadLength);
+    JobDispatcher::GetApi()->Log("Service: %u, payloadLength: %u", serviceNo, payloadLength);
 
     dataBuf.clear();
     Receive(payloadLength, dataBuf);
@@ -134,16 +136,17 @@ void PiVisionEthTermConnection::HandleEvent(const uint32_t eventNo, std::shared_
   if(serviceNo + 1u == eventNo)
   {
     auto newData = std::static_pointer_cast<PiVisionNewDataInd>(dataPtr);
-    PiVisionDataBuf data;
     uint32_t dataSize = newData->dataBuf.size();
     JobDispatcher::GetApi()->Log("Service: %u dataSize: 0x%X", serviceNo, dataSize);
+
+    PiVisionDataBuf header;
     for(uint32_t i = 0u; i < sizeof(uint32_t); ++i)
     {
       uint8_t byte = 0x000000FF & (dataSize >> i * 8);
-      data.push_back(byte);
-      JobDispatcher::GetApi()->Log("byte: 0x%X", byte);
+      header.push_back(byte);
     }
-
+    
+    Send(header);
     Send(newData->dataBuf);
   }
   else

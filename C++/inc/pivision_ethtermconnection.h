@@ -5,6 +5,8 @@
 #include "eventlistenerbase.h"
 #include "pivision_events.h"
 
+#include <mutex>
+
 class PiVisionEthTermConnection : public JobBase, public EventListenerBase
 {
 private:
@@ -13,6 +15,7 @@ private:
   bool active;
   const uint32_t serviceNo;
   const int32_t socketFd;
+  std::mutex sendMutex;
 
 protected:
 

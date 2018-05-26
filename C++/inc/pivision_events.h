@@ -131,31 +131,6 @@ public:
   const PiVisionDataBuf dataBuf;
 };
 
-class PiVisionImageData : public EventDataBase
-{
-private:
-  PiVisionImageData();
-
-protected:
-
-public:
-  PiVisionImageData(const uint32_t _frameNo,
-                    const uint16_t _xSize,
-                    const uint16_t _ySize,
-                    const PiVisionDataBuf _buf) :
-  frameNo(_frameNo),
-  xSize(_xSize),
-  ySize(_ySize),
-  imageData(_buf)
-  {
-
-  }
-  const uint32_t frameNo;
-  const uint16_t xSize;
-  const uint16_t ySize;
-  const PiVisionDataBuf imageData;
-};
-
 class PiVisionSubscribeServiceInd : public EventDataBase
 {
 private:
