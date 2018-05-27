@@ -12,6 +12,7 @@ int main(void)
 {
   JobDispatcher::GetApi()->Log("PiVision start");
 
+  JobDispatcher::GetApi()->AddExecGroup(EVENT_EXEC_GROUP_ID, 4u);
   JobDispatcher::GetApi()->AddExecGroup(PIVISION_FRAMECOORD_THREAD_ID, 0u);
   JobDispatcher::GetApi()->AddExecGroup(PIVISION_SERVICE_DISCOVERY_THREAD_ID, 5u);
   JobDispatcher::GetApi()->AddExecGroup(PIVISION_CONNECTIONS_THREAD_ID, 10u);

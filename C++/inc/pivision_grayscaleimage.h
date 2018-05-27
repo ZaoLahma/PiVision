@@ -7,7 +7,6 @@
 class PiVisionGrayscaleImage : public EventListenerBase
 {
 private:
-  bool receivedAck = true;
 
 protected:
 

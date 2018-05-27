@@ -21,7 +21,6 @@ class PiVisGui():
         self.guiScheduler = guiScheduler
         self.clientScheduler = clientScheduler
         self.client = client
-        self.frameNo = 0
 
         self.resolution = PiVisConstants.IMAGE_RESOLUTION
 
@@ -63,14 +62,6 @@ class PiVisGui():
                 self.showGrayScaleImage(image[1:len(image)])
             elif image[0] == PiVisConstants.COLOR_IMAGE_TYPE:
                 self.showImage(image[1:len(image)])
-            ackData = bytearray();
-            ackData.extend((1).to_bytes(4, byteorder='little'))
-            ackData.extend([self.frameNo])
-            self.client.send(ackData)
-            self.frameNo += 1
-            if self.frameNo > 255:
-                self.frameNo = 0
-
 
     def mainLoop(self):
         print("Mainloop running")

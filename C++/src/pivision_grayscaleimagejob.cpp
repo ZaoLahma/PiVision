@@ -8,8 +8,6 @@ colorImage(_colorImage)
 
 }
 
-#include <stdio.h>
-
 void PiVisionGrayscaleImageJob::ExtractImageProperties(uint16_t* xSize, uint16_t* ySize)
 {
   uint32_t shiftIndex = 0u;
@@ -43,13 +41,6 @@ void PiVisionGrayscaleImageJob::Execute()
   (void) memcpy(&xSize, &extractedXSize, sizeof(xSize));
   (void) memcpy(&ySize, &extractedYSize, sizeof(xSize));
 
-  // grayscaleImage.push_back(xSize[0]);
-  // grayscaleImage.push_back(xSize[1]);
-  // grayscaleImage.push_back(ySize[0]);
-  // grayscaleImage.push_back(ySize[1]);
-
-  (void) printf("colorImage->dataBuf.size(): %u\n", colorImage->dataBuf.size());
-
   uint8_t colorIndex = 0u;
   uint16_t colorIntensity = 0u;
 
@@ -67,6 +58,5 @@ void PiVisionGrayscaleImageJob::Execute()
   }
 
   auto newDataInd = std::make_shared<PiVisionNewDataInd>(grayscaleImage);
-  (void) printf("grayscaleImage.size(): %u\n", grayscaleImage.size());
   JobDispatcher::GetApi()->RaiseEvent(PIVISION_BW_IMAGE_SERVICE_TX, newDataInd);
 }

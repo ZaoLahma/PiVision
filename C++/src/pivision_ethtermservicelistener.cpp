@@ -174,8 +174,6 @@ void PiVisionEthTermServiceListener::handleNewServiceDiscoveryRequests()
 
 	char header[] = "WHERE_IS_";
 
-  JobDispatcher::GetApi()->Log("handleNewServiceDiscoveryRequests for service %u received %d bytes", serviceNo, bytesReceived);
-
 	if(bytesReceived > (int)strlen(header))
 	{
 		messageBuf[bytesReceived] = '\0';
@@ -234,10 +232,8 @@ void PiVisionEthTermServiceListener::Execute()
   JobDispatcher::GetApi()->Log("Service %u published to network at address %s", serviceNo, ownIpAddress);
   while(active)
   {
-    JobDispatcher::GetApi()->Log("Execute begin");
     handleNewServiceDiscoveryRequests();
     handleNewConnections();
-    JobDispatcher::GetApi()->Log("Execute done");
   }
 }
 

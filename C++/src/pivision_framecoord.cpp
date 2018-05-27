@@ -49,9 +49,6 @@ void PiVisionFrameCoord::HandleEvent(const uint32_t eventNo,
     {
       auto newDataInd = std::static_pointer_cast<PiVisionNewDataInd>(dataPtr);
       JobDispatcher::GetApi()->Log("FrameCoord: New frame: %u", currFrame);
-
-      JobDispatcher::GetApi()->Log("FrameCoord: newDataInd->imageData.size(): %u", newDataInd->dataBuf.size());
-
       currFrame += 1u;
       JobDispatcher::GetApi()->RaiseEvent(PIVISION_COLOR_IMAGE_SERVICE_TX, newDataInd);
     }

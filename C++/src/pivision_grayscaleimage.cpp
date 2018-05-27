@@ -7,7 +7,6 @@
 PiVisionGrayscaleImage::PiVisionGrayscaleImage()
 {
   JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_SERVICE_AVAILABLE_IND, this);
-  JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_BW_IMAGE_SERVICE_RX, this);
 
   auto subscribeService = std::make_shared<PiVisionSubscribeServiceInd>(PIVISION_COLOR_IMAGE_SERVICE_RX);
   JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_SUBSCRIBE_SERVICE_IND, subscribeService);
@@ -17,22 +16,12 @@ void PiVisionGrayscaleImage::HandleEvent(const uint32_t eventNo, std::shared_ptr
 {
   switch(eventNo)
   {
-    case PIVISION_BW_IMAGE_SERVICE_RX:
-    {
-      JobDispatcher::GetApi()->Log("Received BW image response");
-      receivedAck = true;
-    }
-    break;
     case PIVISION_COLOR_IMAGE_SERVICE_RX:
     {
-      if(receivedAck)
-      {
-        receivedAck = false;
-        auto imageData = std::static_pointer_cast<PiVisionNewDataInd>(dataPtr);
+      auto imageData = std::static_pointer_cast<PiVisionNewDataInd>(dataPtr);
 
-        auto grayscaleJob = std::make_shared<PiVisionGrayscaleImageJob>(imageData);
-        JobDispatcher::GetApi()->ExecuteJob(grayscaleJob);
-      }
+      auto grayscaleJob = std::make_shared<PiVisionGrayscaleImageJob>(imageData);
+      JobDispatcher::GetApi()->ExecuteJob(grayscaleJob);
     }
     break;
     case PIVISION_EVENT_SERVICE_AVAILABLE_IND:

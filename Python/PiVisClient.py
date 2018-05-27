@@ -3,9 +3,14 @@
 import socket
 import struct
 import PiVisConstants
+import multiprocessing
 
 class PiVisClient:
     def __init__(self, scheduler, portNo):
+        self.frameNo = 0
+        self.active = True
+        self.receiveFinished = False
+        self.lock = multiprocessing.Lock()
         self.serviceNo = -1
         self.portNo = portNo
         self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -16,6 +21,7 @@ class PiVisClient:
         self.piVisServerAddress = ""
         self.data = []
         scheduler.registerRunnable(self.run)
+        scheduler.registerStopper(self.stop)
 
     def findService(self):
         data = bytearray()
@@ -48,10 +54,12 @@ class PiVisClient:
             self.stateIndex = self.stateIndex + 1
 
     def connected(self):
-        self.receive()
+        multiprocessing.Process(target=self.receive()).start()
 
     def getData(self):
+        self.lock.acquire()
         retVal = self.data
+        self.lock.release()
         return retVal
 
     def __receiveInternal(self, numBytes):
@@ -67,24 +75,38 @@ class PiVisClient:
         return data
 
     def receive(self):
-        headerSize = 4 # 4 bytes image size
+        print("Receive started")
+        while self.active:
+            headerSize = 4 # 4 bytes image size
 
-        header = self.__receiveInternal(headerSize)
+            header = self.__receiveInternal(headerSize)
 
-        imageSize = bytearray(header[0:4])
-        imageSize = struct.unpack("<L", imageSize)[0]
+            imageSize = bytearray(header[0:4])
+            imageSize = struct.unpack("<L", imageSize)[0]
 
-        print("imageSize: " + str(imageSize) + " " + str(hex(imageSize)))
+            receiveBuf = self.__receiveInternal(imageSize)
 
-        receiveBuf = self.__receiveInternal(imageSize)
+            tmpBuf = []
+            tmpBuf += [PiVisConstants.GRAY_SCALE_IMAGE_TYPE]
+            tmpBuf += receiveBuf
+            self.lock.acquire()
+            self.data = tmpBuf
+            self.receiveFinished = True
+            self.lock.release()
 
-        tmpBuf = []
-        tmpBuf += [PiVisConstants.GRAY_SCALE_IMAGE_TYPE]
-        tmpBuf += receiveBuf
-        self.data = tmpBuf
+            ackData = bytearray();
+            ackData.extend((1).to_bytes(4, byteorder='little'))
+            ackData.extend([self.frameNo])
+            self.send(ackData)
+            self.frameNo += 1
+            if self.frameNo > 255:
+                self.frameNo = 0            
 
     def send(self, data):
         self.serverSocket.sendall(data)
 
     def run(self):
         self.states[self.stateIndex]()
+
+    def stop(self):
+        self.active = False
