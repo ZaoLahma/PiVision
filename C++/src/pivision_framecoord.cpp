@@ -28,7 +28,7 @@ void PiVisionFrameCoord::HandleEvent(const uint32_t eventNo,
       if(PIVISION_CAMERA_SERVICE_RX == serviceUnavailable->serviceNo)
       {
         JobDispatcher::GetApi()->Log("PiVisionFrameCoord lost camera. Abort.");
-        JobDispatcher::GetApi()->RaiseEventIn(PIVISION_EVENT_STOP, nullptr, 500u);
+        JobDispatcher::GetApi()->RaiseEventIn(PIVISION_EVENT_STOP, nullptr, 3000u);
       }
     }
     break;
