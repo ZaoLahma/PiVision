@@ -2,6 +2,8 @@
 #include "jobdispatcher.h"
 #include "pivision_services.h"
 
+#include <string.h>
+
 PiVisionGrayscaleImageJob::PiVisionGrayscaleImageJob(const std::shared_ptr<PiVisionNewDataInd> _colorImage) :
 colorImage(_colorImage)
 {
