@@ -4,8 +4,8 @@
 #include "PiVisScheduler.h"
 #include <string.h>
 
-#define ACK_BUF_SIZE            (2u)
-#define ACK_BUF_FRAME_NO_OFFSET (1u)
+#define ACK_BUF_SIZE            (5u)
+#define ACK_BUF_FRAME_NO_OFFSET (4u)
 
 #define IMAGE_SIZE_HEADER_OFFSET   0u
 #define IMAGE_X_SIZE_HEADER_OFFSET 4u

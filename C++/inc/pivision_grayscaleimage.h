@@ -2,10 +2,12 @@
 #define HEADER_PIVISION_GRAYSCALEIMAGE
 
 #include "eventlistenerbase.h"
+#include <cstddef>
 
 class PiVisionGrayscaleImage : public EventListenerBase
 {
 private:
+  bool receivedAck = true;
 
 protected:
 
