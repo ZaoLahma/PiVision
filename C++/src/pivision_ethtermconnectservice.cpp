@@ -47,12 +47,12 @@ void PiVisionEthTermConnectService::FindService(void)
   addr.sin_addr.s_addr = inet_addr(multicastGroup.c_str());
   addr.sin_port = htons(serviceNo);
 
-  int numBytesSent = sendto(serviceDiscoverySocket,
-                            serviceDiscoverString.c_str(),
-                            serviceDiscoverString.length(),
-                            0,
-                            (struct sockaddr*)&addr,
-                            sizeof(addr));
+  int32_t numBytesSent = sendto(serviceDiscoverySocket,
+                                serviceDiscoverString.c_str(),
+                                serviceDiscoverString.length(),
+                                0,
+                                (struct sockaddr*)&addr,
+                                sizeof(addr));
   if(numBytesSent < 0)
   {
     perror("sendto");

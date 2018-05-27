@@ -57,7 +57,7 @@ void PiVisionEthTermServiceListener::initiateServiceDiscoverySocket()
 {
   struct ip_mreq mreq;
   serviceDiscoverySocket = socket(AF_INET, SOCK_DGRAM, 0);
-  unsigned int yes = 1;
+  uint32_t yes = 1;
   if(0 > setsockopt(serviceDiscoverySocket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)))
   {
   	perror("setsockopt 1");
@@ -164,7 +164,7 @@ void PiVisionEthTermServiceListener::initiateServerSocketFd()
 void PiVisionEthTermServiceListener::handleNewServiceDiscoveryRequests()
 {
 	char messageBuf[50];
-	unsigned int addrLen = sizeof(addr);
+	uint32_t addrLen = sizeof(addr);
 	int bytesReceived = recvfrom(serviceDiscoverySocket,
               								 messageBuf,
               								 sizeof(messageBuf),
@@ -179,16 +179,16 @@ void PiVisionEthTermServiceListener::handleNewServiceDiscoveryRequests()
 		messageBuf[bytesReceived] = '\0';
 
 		char* portNoStr = &messageBuf[strlen(header)];
-		unsigned int portNo = atoi(portNoStr);
+		uint32_t portNo = atoi(portNoStr);
 
 		if(serviceNo == portNo)
 		{
-			printf("Service provided. Responding to: %s\n", inet_ntoa(addr.sin_addr));
+			JobDispatcher::GetApi()->Log("Service %u provided. Responding to: %s", portNo, inet_ntoa(addr.sin_addr));
 			sendto(serviceDiscoverySocket, ownIpAddress, INET_ADDRSTRLEN, 0, (struct sockaddr*)&addr, sizeof(addr));
 		}
 		else
 		{
-			printf("Service not provided\n");
+			JobDispatcher::GetApi()->Log("Service %u not provided", portNo);
 		}
 	}
 }
@@ -218,7 +218,6 @@ void PiVisionEthTermServiceListener::handleNewConnections()
 		tv.tv_sec = 0;
 		tv.tv_usec = 500000;
 		setsockopt(clientSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
-		(void) printf("Accepted new connection\n");
 
     auto newConnection = std::make_shared<PiVisionEthTermConnection>(serviceNo, clientSocket);
     JobDispatcher::GetApi()->ExecuteJobInGroup(newConnection, PIVISION_CONNECTIONS_THREAD_ID);
