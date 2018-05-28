@@ -98,7 +98,7 @@ class PiVisClient:
             ackData = bytearray();
             ackData.extend((1).to_bytes(4, byteorder='little'))
             ackData.extend([self.frameNo])
-            print("Responding with " + str(ackData))
+            #print("Responding with " + str(ackData))
             self.send(ackData)
             self.frameNo += 1
             if self.frameNo > 255:
