@@ -20,6 +20,7 @@ static const uint32_t PIVISION_EVENT_SERVICE_AVAILABLE_IND     = 0xFFFF0008u;
 static const uint32_t PIVISION_EVENT_SERVICE_UNAVAILABLE_IND   = 0xFFFF0009u;
 static const uint32_t PIVISION_EVENT_SERVICE_PROVIDED_IND      = 0xFFFF000Au;
 static const uint32_t PIVISION_EVENT_PROVIDE_SERVICE_IND       = 0xFFFF000Bu;
+static const uint32_t PIVISION_EVENT_IMAGE_DATA_IND            = 0xFFFF000Cu;
 
 class PiVisionConnectToServiceReq : public EventDataBase
 {
@@ -189,6 +190,31 @@ public:
 
   }
   const uint32_t serviceNo;
+};
+
+enum class PiVisionImageType
+{
+  PIVISION_COLOR_IMAGE = 0,
+  PIVISION_BW_IMAGE
+};
+
+class PiVisionImageDataInd : public EventDataBase
+{
+private:
+  PiVisionImageDataInd();
+
+protected:
+
+public:
+  PiVisionImageDataInd(const PiVisionImageType _imageType,
+                       const PiVisionDataBuf _pixelData) :
+  imageType(_imageType),
+  pixelData(_pixelData)
+  {
+
+  }
+  const PiVisionImageType imageType;
+  const PiVisionDataBuf pixelData;
 };
 
 #endif

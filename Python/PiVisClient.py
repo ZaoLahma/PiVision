@@ -84,23 +84,25 @@ class PiVisClient:
             imageSize = bytearray(header[0:4])
             imageSize = struct.unpack("<L", imageSize)[0]
 
-            receiveBuf = self.__receiveInternal(imageSize)
+            if 0 is not imageSize:
+                receiveBuf = self.__receiveInternal(imageSize)
 
-            tmpBuf = []
-            tmpBuf += [PiVisConstants.GRAY_SCALE_IMAGE_TYPE]
-            tmpBuf += receiveBuf
-            self.lock.acquire()
-            self.data = tmpBuf
-            self.receiveFinished = True
-            self.lock.release()
+                tmpBuf = []
+                tmpBuf += [PiVisConstants.GRAY_SCALE_IMAGE_TYPE]
+                tmpBuf += receiveBuf
+                self.lock.acquire()
+                self.data = tmpBuf
+                self.receiveFinished = True
+                self.lock.release()
 
             ackData = bytearray();
             ackData.extend((1).to_bytes(4, byteorder='little'))
             ackData.extend([self.frameNo])
+            print("Responding with " + str(ackData))
             self.send(ackData)
             self.frameNo += 1
             if self.frameNo > 255:
-                self.frameNo = 0            
+                self.frameNo = 0
 
     def send(self, data):
         self.serverSocket.sendall(data)
