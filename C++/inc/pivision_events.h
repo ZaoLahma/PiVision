@@ -1,6 +1,7 @@
 #ifndef HEADER_PIVISION_EVENTS
 #define HEADER_PIVISION_EVENTS
 
+#include <memory>
 #include <string>
 #include <stdint.h>
 #include <vector>
