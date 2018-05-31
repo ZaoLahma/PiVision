@@ -13,6 +13,7 @@ private:
   void Receive(const uint32_t numBytesToGet, PiVisionDataBuf& dataBuf);
   void Send(const PiVisionDataBuf& dataBuf);
   bool active;
+  const PiVisionConnectionType connType;  
   const uint32_t serviceNo;
   const int32_t socketFd;
   std::mutex sendMutex;
@@ -20,7 +21,9 @@ private:
 protected:
 
 public:
-  PiVisionEthTermConnection(const uint32_t _serviceNo, const int32_t _socketFd);
+  PiVisionEthTermConnection(const PiVisionConnectionType _connType,
+                            const uint32_t _serviceNo,
+                            const int32_t _socketFd);
   ~PiVisionEthTermConnection();
   void Execute();
   void HandleEvent(const uint32_t eventNo, std::shared_ptr<EventDataBase> dataPtr);

@@ -50,7 +50,9 @@ void PiVisionEthTerm::HandleEvent(const uint32_t eventNo, std::shared_ptr<EventD
 
           JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_CONNECT_TO_SERVICE_CFM, connectCfm);
 
-          auto connectionJob = std::make_shared<PiVisionEthTermConnection>(statusInd->serviceNo, statusInd->socketFd);
+          auto connectionJob = std::make_shared<PiVisionEthTermConnection>(PiVisionConnectionType::PIVISION_CLIENT,
+                                                                           statusInd->serviceNo,
+                                                                           statusInd->socketFd);
           JobDispatcher::GetApi()->ExecuteJobInGroup(connectionJob, PIVISION_CONNECTIONS_THREAD_ID);
         }
         break;

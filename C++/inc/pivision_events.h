@@ -20,7 +20,6 @@ static const uint32_t PIVISION_EVENT_SERVICE_AVAILABLE_IND     = 0xFFFF0008u;
 static const uint32_t PIVISION_EVENT_SERVICE_UNAVAILABLE_IND   = 0xFFFF0009u;
 static const uint32_t PIVISION_EVENT_SERVICE_PROVIDED_IND      = 0xFFFF000Au;
 static const uint32_t PIVISION_EVENT_PROVIDE_SERVICE_IND       = 0xFFFF000Bu;
-static const uint32_t PIVISION_EVENT_IMAGE_DATA_IND            = 0xFFFF000Cu;
 
 class PiVisionConnectToServiceReq : public EventDataBase
 {
@@ -114,6 +113,12 @@ public:
   const int32_t socketFd;
 };
 
+enum class PiVisionConnectionType
+{
+  PIVISION_SERVER = 0,
+  PIVISION_CLIENT
+};
+
 typedef std::vector<unsigned char> PiVisionDataBuf;
 
 class PiVisionNewDataInd : public EventDataBase
@@ -124,11 +129,13 @@ private:
 protected:
 
 public:
-  PiVisionNewDataInd(const PiVisionDataBuf _buf) :
+  PiVisionNewDataInd(const PiVisionConnectionType _connType, const PiVisionDataBuf _buf) :
+  connType(_connType),
   dataBuf(_buf)
   {
 
   }
+  const PiVisionConnectionType connType;
   const PiVisionDataBuf dataBuf;
 };
 
@@ -190,31 +197,6 @@ public:
 
   }
   const uint32_t serviceNo;
-};
-
-enum class PiVisionImageType
-{
-  PIVISION_COLOR_IMAGE = 0,
-  PIVISION_BW_IMAGE
-};
-
-class PiVisionImageDataInd : public EventDataBase
-{
-private:
-  PiVisionImageDataInd();
-
-protected:
-
-public:
-  PiVisionImageDataInd(const PiVisionImageType _imageType,
-                       const PiVisionDataBuf _pixelData) :
-  imageType(_imageType),
-  pixelData(_pixelData)
-  {
-
-  }
-  const PiVisionImageType imageType;
-  const PiVisionDataBuf pixelData;
 };
 
 #endif

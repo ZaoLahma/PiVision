@@ -42,20 +42,16 @@ void PiVisionFrameCoord::HandleEvent(const uint32_t eventNo,
 
         auto serviceProvided = std::make_shared<PiVisionServiceAvailableInd>(PIVISION_COLOR_IMAGE_SERVICE_RX);
         JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_SERVICE_PROVIDED_IND, serviceProvided);
-        JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_SERVICE_AVAILABLE_IND, serviceProvided);
       }
     }
     break;
     case PIVISION_CAMERA_SERVICE_RX:
     {
-      /* Send to network clients */
       auto newDataInd = std::static_pointer_cast<PiVisionNewDataInd>(dataPtr);
+      auto colorImage = std::make_shared<PiVisionNewDataInd>(PiVisionConnectionType::PIVISION_SERVER,
+                                                             newDataInd->dataBuf);
       currFrame += 1u;
-      JobDispatcher::GetApi()->RaiseEvent(PIVISION_COLOR_IMAGE_SERVICE_TX, newDataInd);
-
-      /* Send to local clients */
-      auto imageData = std::make_shared<PiVisionImageDataInd>(PiVisionImageType::PIVISION_COLOR_IMAGE, newDataInd->dataBuf);
-      JobDispatcher::GetApi()->RaiseEvent(PIVISION_COLOR_IMAGE_SERVICE_RX, imageData);
+      JobDispatcher::GetApi()->RaiseEvent(PIVISION_COLOR_IMAGE_SERVICE_TX, colorImage);
     }
     break;
     case PIVISION_EVENT_STOP:

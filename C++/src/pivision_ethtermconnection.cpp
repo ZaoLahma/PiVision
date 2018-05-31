@@ -9,9 +9,11 @@
 #include "pivision_events.h"
 #include "pivision_macros.h"
 
-PiVisionEthTermConnection::PiVisionEthTermConnection(const uint32_t _serviceNo,
+PiVisionEthTermConnection::PiVisionEthTermConnection(const PiVisionConnectionType _connType,
+                                                     const uint32_t _serviceNo,
                                                      const int32_t _socketFd) :
 active(true),
+connType(_connType),
 serviceNo(_serviceNo),
 socketFd(_socketFd)
 {
@@ -173,7 +175,7 @@ void PiVisionEthTermConnection::Execute()
 
     if(0 < payloadLength)
     {
-      auto newData = std::make_shared<PiVisionNewDataInd>(dataBuf);
+      auto newData = std::make_shared<PiVisionNewDataInd>(connType, dataBuf);
       JobDispatcher::GetApi()->RaiseEvent(serviceNo, newData);
     }
 
@@ -203,17 +205,21 @@ void PiVisionEthTermConnection::HandleEvent(const uint32_t eventNo, std::shared_
   if(serviceNo + 1u == eventNo)
   {
     auto newData = std::static_pointer_cast<PiVisionNewDataInd>(dataPtr);
-    uint32_t dataSize = newData->dataBuf.size();
 
-    PiVisionDataBuf header;
-    for(uint32_t i = 0u; i < sizeof(uint32_t); ++i)
+    if(connType == newData->connType)
     {
-      uint8_t byte = 0x000000FF & (dataSize >> i * 8);
-      header.push_back(byte);
-    }
+      uint32_t dataSize = newData->dataBuf.size();
 
-    Send(header);
-    Send(newData->dataBuf);
+      PiVisionDataBuf header;
+      for(uint32_t i = 0u; i < sizeof(uint32_t); ++i)
+      {
+        uint8_t byte = 0x000000FF & (dataSize >> i * 8);
+        header.push_back(byte);
+      }
+
+      Send(header);
+      Send(newData->dataBuf);
+    }
   }
   else
   {

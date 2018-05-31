@@ -219,7 +219,9 @@ void PiVisionEthTermServiceListener::handleNewConnections()
 		tv.tv_usec = 500000;
 		setsockopt(clientSocket, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv));
 
-    auto newConnection = std::make_shared<PiVisionEthTermConnection>(serviceNo, clientSocket);
+    auto newConnection = std::make_shared<PiVisionEthTermConnection>(PiVisionConnectionType::PIVISION_SERVER,
+                                                                     serviceNo,
+                                                                     clientSocket);
     JobDispatcher::GetApi()->ExecuteJobInGroup(newConnection, PIVISION_CONNECTIONS_THREAD_ID);
 	}
 }
