@@ -14,9 +14,11 @@ void PiVisionGrayscaleImageJob::ExtractImageProperties(uint16_t* xSize, uint16_t
 {
   uint32_t shiftIndex = 0u;
 
+  auto pixelData = colorImage->dataBuf;
+
   for(uint32_t i = 0u; i < sizeof(uint16_t); ++i)
   {
-    *xSize = *xSize | (colorImage->dataBuf[i] << (shiftIndex * 8u));
+    *xSize = *xSize | ((*pixelData)[i] << (shiftIndex * 8u));
     shiftIndex += 1u;
   }
 
@@ -24,14 +26,14 @@ void PiVisionGrayscaleImageJob::ExtractImageProperties(uint16_t* xSize, uint16_t
 
   for(uint32_t i = sizeof(uint16_t); i < 2 * sizeof(uint16_t); ++i)
   {
-    *ySize = *ySize | (colorImage->dataBuf[i] << (shiftIndex * 8u));
+    *ySize = *ySize | ((*pixelData)[i] << (shiftIndex * 8u));
     shiftIndex += 1u;
   }
 }
 
 void PiVisionGrayscaleImageJob::Execute()
 {
-  PiVisionDataBuf grayscaleImage;
+  auto grayscaleImage = std::make_shared<PiVisionDataBuf>();
 
   uint16_t extractedXSize = 0u;
   uint16_t extractedYSize = 0u;
@@ -46,16 +48,18 @@ void PiVisionGrayscaleImageJob::Execute()
   uint8_t colorIndex = 0u;
   uint16_t colorIntensity = 0u;
 
-  for(uint32_t byteIndex = 4u; byteIndex < colorImage->dataBuf.size(); ++byteIndex)
+  auto pixelData = colorImage->dataBuf;
+
+  for(uint32_t byteIndex = 4u; byteIndex < pixelData->size(); ++byteIndex)
   {
-    colorIntensity += colorImage->dataBuf[byteIndex];
+    colorIntensity += (*pixelData)[byteIndex];
     colorIndex += 1u;
 
     if(colorIndex > 2u)
     {
       colorIndex = 0u;
       colorIntensity = colorIntensity / 3u;
-      grayscaleImage.push_back(colorIntensity);
+      grayscaleImage->push_back(colorIntensity);
     }
   }
 

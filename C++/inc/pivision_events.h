@@ -129,14 +129,14 @@ private:
 protected:
 
 public:
-  PiVisionNewDataInd(const PiVisionConnectionType _connType, const PiVisionDataBuf _buf) :
+  PiVisionNewDataInd(const PiVisionConnectionType _connType, const std::shared_ptr<PiVisionDataBuf> _buf) :
   connType(_connType),
   dataBuf(_buf)
   {
 
   }
   const PiVisionConnectionType connType;
-  const PiVisionDataBuf dataBuf;
+  const std::shared_ptr<PiVisionDataBuf> dataBuf;
 };
 
 class PiVisionSubscribeServiceInd : public EventDataBase

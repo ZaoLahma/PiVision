@@ -23,7 +23,7 @@ void PiVisionGrayscaleImage::HandleEvent(const uint32_t eventNo, std::shared_ptr
       auto grayscaleJob = std::make_shared<PiVisionGrayscaleImageJob>(imageData);
       JobDispatcher::GetApi()->ExecuteJob(grayscaleJob);
 
-      auto ackMessage = std::make_shared<PiVisionNewDataInd>(PiVisionConnectionType::PIVISION_CLIENT, PiVisionDataBuf());
+      auto ackMessage = std::make_shared<PiVisionNewDataInd>(PiVisionConnectionType::PIVISION_CLIENT, std::make_shared<PiVisionDataBuf>());
       JobDispatcher::GetApi()->RaiseEvent(PIVISION_COLOR_IMAGE_SERVICE_TX, ackMessage);
     }
     break;

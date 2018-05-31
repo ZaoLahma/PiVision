@@ -10,10 +10,10 @@
 class PiVisionEthTermConnection : public JobBase, public EventListenerBase
 {
 private:
-  void Receive(const uint32_t numBytesToGet, PiVisionDataBuf& dataBuf);
-  void Send(const PiVisionDataBuf& dataBuf);
+  void Receive(const uint32_t numBytesToGet, std::shared_ptr<PiVisionDataBuf> dataBuf);
+  void Send(const std::shared_ptr<PiVisionDataBuf> dataBuf);
   bool active;
-  const PiVisionConnectionType connType;  
+  const PiVisionConnectionType connType;
   const uint32_t serviceNo;
   const int32_t socketFd;
   std::mutex sendMutex;
