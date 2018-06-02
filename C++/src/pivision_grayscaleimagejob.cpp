@@ -50,6 +50,9 @@ void PiVisionGrayscaleImageJob::Execute()
 
   auto pixelData = colorImage->dataBuf;
 
+  const uint32_t UPPER_LIMIT = 254u;
+  const uint32_t LOWER_LIMIT = 1u;
+
   for(uint32_t byteIndex = 4u; byteIndex < pixelData->size(); ++byteIndex)
   {
     colorIntensity += (*pixelData)[byteIndex];
@@ -59,6 +62,17 @@ void PiVisionGrayscaleImageJob::Execute()
     {
       colorIndex = 0u;
       colorIntensity = colorIntensity / 3u;
+
+      if(colorIntensity > UPPER_LIMIT)
+      {
+        colorIntensity = UPPER_LIMIT;
+      }
+
+      if(colorIntensity < LOWER_LIMIT)
+      {
+        colorIntensity = LOWER_LIMIT;
+      }
+
       grayscaleImage->push_back(colorIntensity);
     }
   }
