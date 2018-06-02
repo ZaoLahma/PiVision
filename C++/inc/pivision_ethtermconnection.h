@@ -11,12 +11,17 @@ class PiVisionEthTermConnection : public JobBase, public EventListenerBase
 {
 private:
   void Receive(const uint32_t numBytesToGet, std::shared_ptr<PiVisionDataBuf> dataBuf);
+  void SendHeader(const std::shared_ptr<PiVisionDataBuf> dataBuf);
+  void SendPayload(const std::shared_ptr<PiVisionDataBuf> dataBuf);
   void Send(const std::shared_ptr<PiVisionDataBuf> dataBuf);
   bool active;
   const PiVisionConnectionType connType;
   const uint32_t serviceNo;
   const int32_t socketFd;
   std::mutex sendMutex;
+  const uint32_t ackMsg;
+  bool receivedAck;
+  std::shared_ptr<PiVisionDataBuf> ackMsgBuf;
 
 protected:
 

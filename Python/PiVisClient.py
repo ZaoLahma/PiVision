@@ -8,6 +8,7 @@ import multiprocessing
 class PiVisClient:
     def __init__(self, scheduler, portNo):
         self.frameNo = 0
+        self.ackMsg = 0xDEADBEEF
         self.active = True
         self.receiveFinished = False
         self.lock = multiprocessing.Lock()
@@ -96,7 +97,8 @@ class PiVisClient:
                 self.lock.release()
 
             ackData = bytearray();
-            ackData.extend((1).to_bytes(4, byteorder='little'))
+            ackData.extend((5).to_bytes(4, byteorder='little'))
+            ackData.extend((self.ackMsg).to_bytes(4, byteorder='little'))
             ackData.extend([self.frameNo])
             #print("Responding with " + str(ackData))
             self.send(ackData)

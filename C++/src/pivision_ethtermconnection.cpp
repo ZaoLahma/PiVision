@@ -8,6 +8,7 @@
 #include "jobdispatcher.h"
 #include "pivision_events.h"
 #include "pivision_macros.h"
+#include <stdio.h>
 
 PiVisionEthTermConnection::PiVisionEthTermConnection(const PiVisionConnectionType _connType,
                                                      const uint32_t _serviceNo,
@@ -15,8 +16,15 @@ PiVisionEthTermConnection::PiVisionEthTermConnection(const PiVisionConnectionTyp
 active(true),
 connType(_connType),
 serviceNo(_serviceNo),
-socketFd(_socketFd)
+socketFd(_socketFd),
+ackMsg(0xDEADBEEFu),
+receivedAck(true)
 {
+  ackMsgBuf = std::make_shared<PiVisionDataBuf>();
+  for(uint32_t i = 0u; i < sizeof(ackMsg); ++i)
+  {
+    ackMsgBuf->push_back(0x000000FF & (ackMsg >> (i * 8u)));
+  }
   JobDispatcher::GetApi()->Log("New connection for service: %u", serviceNo);
   JobDispatcher::GetApi()->SubscribeToEvent(serviceNo + 1u, this);
   JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_STOP, this);
@@ -94,7 +102,26 @@ void PiVisionEthTermConnection::Receive(const uint32_t numBytesToGet, std::share
 void PiVisionEthTermConnection::Send(const std::shared_ptr<PiVisionDataBuf> dataBuf)
 {
   std::unique_lock<std::mutex> lock(sendMutex);
+  SendHeader(dataBuf);
+  SendPayload(dataBuf);
+}
 
+void PiVisionEthTermConnection::SendHeader(const std::shared_ptr<PiVisionDataBuf> dataBuf)
+{
+  uint32_t dataSize = dataBuf->size();
+
+  auto header = std::make_shared<PiVisionDataBuf>();
+  for(uint32_t i = 0u; i < sizeof(uint32_t); ++i)
+  {
+    uint8_t byte = 0x000000FF & (dataSize >> i * 8);
+    header->push_back(byte);
+  }
+
+  SendPayload(header);
+}
+
+void PiVisionEthTermConnection::SendPayload(const std::shared_ptr<PiVisionDataBuf> dataBuf)
+{
   const uint32_t MAX_CHUNK_SIZE = 256u;
   unsigned char buffer[MAX_CHUNK_SIZE];
 
@@ -175,8 +202,25 @@ void PiVisionEthTermConnection::Execute()
 
     if(0 < payloadLength)
     {
-      auto newData = std::make_shared<PiVisionNewDataInd>(connType, dataBuf);
-      JobDispatcher::GetApi()->RaiseEvent(serviceNo, newData);
+      bool isAck = false;
+      if(sizeof(ackMsg) <= payloadLength)
+      {
+        isAck = ((*dataBuf)[0] == (*ackMsgBuf)[0] &&
+                 (*dataBuf)[1] == (*ackMsgBuf)[1] &&
+                 (*dataBuf)[2] == (*ackMsgBuf)[2] &&
+                 (*dataBuf)[3] == (*ackMsgBuf)[3]);
+      }
+
+      if(!isAck)
+      {
+        auto newData = std::make_shared<PiVisionNewDataInd>(connType, dataBuf);
+        JobDispatcher::GetApi()->RaiseEvent(serviceNo, newData);
+        Send(ackMsgBuf);
+      }
+      else
+      {
+        receivedAck = true;
+      }
     }
 
     // /* Rudimentary keep alive functionality */
@@ -204,21 +248,15 @@ void PiVisionEthTermConnection::HandleEvent(const uint32_t eventNo, std::shared_
 {
   if(serviceNo + 1u == eventNo)
   {
-    auto newData = std::static_pointer_cast<PiVisionNewDataInd>(dataPtr);
-
-    if(connType == newData->connType)
+    if(receivedAck)
     {
-      uint32_t dataSize = newData->dataBuf->size();
+      auto newData = std::static_pointer_cast<PiVisionNewDataInd>(dataPtr);
 
-      auto header = std::make_shared<PiVisionDataBuf>();
-      for(uint32_t i = 0u; i < sizeof(uint32_t); ++i)
+      if(connType == newData->connType)
       {
-        uint8_t byte = 0x000000FF & (dataSize >> i * 8);
-        header->push_back(byte);
+        receivedAck = false;
+        Send(newData->dataBuf);
       }
-
-      Send(header);
-      Send(newData->dataBuf);
     }
   }
   else

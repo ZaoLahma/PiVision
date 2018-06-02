@@ -4,8 +4,8 @@
 #include "PiVisScheduler.h"
 #include <string.h>
 
-#define ACK_BUF_SIZE            (5u)
-#define ACK_BUF_FRAME_NO_OFFSET (4u)
+#define ACK_BUF_SIZE            (9u)
+#define ACK_BUF_FRAME_NO_OFFSET (8u)
 
 #define IMAGE_SIZE_HEADER_OFFSET   0u
 #define IMAGE_X_SIZE_HEADER_OFFSET 4u
@@ -25,6 +25,7 @@ static PiVisServerContext serverContext;
 static enum PiVisImageDataTLState state;
 
 static unsigned int numDroppedFrames;
+static unsigned int numDroppedFramesAck;
 static unsigned char frameNo;
 static unsigned char ackBuf[ACK_BUF_SIZE];
 
@@ -58,8 +59,9 @@ void IMGDATATL_init(void)
 
 	state = SEND_DATA;
 
-	numDroppedFrames = 0;
-	frameNo = 0;
+	numDroppedFrames = 0u;
+  numDroppedFramesAck = 0u;
+	frameNo = 0u;
 }
 
 void IMGDATATL_sendGrayscaleImage(unsigned char* buf, unsigned int size, unsigned short xSize, unsigned short ySize)
@@ -85,7 +87,7 @@ void IMGDATATL_sendGrayscaleImage(unsigned char* buf, unsigned int size, unsigne
 		}
 		else
 		{
-			numDroppedFrames++;
+			numDroppedFramesAck++;
 		}
 	}
 	else
