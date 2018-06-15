@@ -56,7 +56,7 @@ PiVisionEthTermConnection::~PiVisionEthTermConnection()
 
 void PiVisionEthTermConnection::Receive(const uint32_t numBytesToGet, std::shared_ptr<PiVisionDataBuf> dataBuf)
 {
-  const uint32_t MAX_CHUNK_SIZE = 256u;
+  const uint32_t MAX_CHUNK_SIZE = 4096u;
   unsigned char buffer[MAX_CHUNK_SIZE];
 
   const uint32_t MAX_RECEIVE_ATTEMPTS = 10u;
@@ -140,7 +140,7 @@ void PiVisionEthTermConnection::SendHeader(const std::shared_ptr<PiVisionDataBuf
 
 void PiVisionEthTermConnection::SendPayload(const std::shared_ptr<PiVisionDataBuf> dataBuf)
 {
-  const uint32_t MAX_CHUNK_SIZE = 256u;
+  const uint32_t MAX_CHUNK_SIZE = 4096u;
   unsigned char buffer[MAX_CHUNK_SIZE];
 
   const uint32_t MAX_SEND_ATTEMPTS = 10u;
