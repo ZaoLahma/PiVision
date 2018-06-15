@@ -5,6 +5,7 @@
 #include "eventlistenerbase.h"
 #include "pivision_events.h"
 
+#include <condition_variable>
 #include <mutex>
 
 class PiVisionEthTermConnectionHBTimeout : public EventDataBase
@@ -34,6 +35,7 @@ private:
   const uint32_t serviceNo;
   const int32_t socketFd;
   std::mutex sendMutex;
+  std::condition_variable lastExecNotification;
   const uint32_t ackMsg;
   const uint32_t heartbeatMsg;
   const uint32_t HEARTBEAT_TIMEOUT;

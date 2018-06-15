@@ -48,10 +48,13 @@ ackEnabled(false)
 PiVisionEthTermConnection::~PiVisionEthTermConnection()
 {
   JobDispatcher::GetApi()->UnsubscribeToEvent(serviceNo + 1u, this);
-  JobDispatcher::GetApi()->UnsubscribeToEvent(HEARTBEAT_TIMEOUT, this);
   JobDispatcher::GetApi()->UnsubscribeToEvent(PIVISION_EVENT_STOP, this);
 
+  /* Wait for the lingering heartbeat timeout */
   std::unique_lock<std::mutex> lock(sendMutex);
+  lastExecNotification.wait(lock);
+  JobDispatcher::GetApi()->UnsubscribeToEvent(HEARTBEAT_TIMEOUT, this);
+  JobDispatcher::GetApi()->Log("Destroying connection instance for service %u", serviceNo);
 }
 
 void PiVisionEthTermConnection::Receive(const uint32_t numBytesToGet, std::shared_ptr<PiVisionDataBuf> dataBuf)
@@ -294,8 +297,16 @@ void PiVisionEthTermConnection::HandleEvent(const uint32_t eventNo, std::shared_
     auto heartbeat = std::static_pointer_cast<PiVisionEthTermConnectionHBTimeout>(dataPtr);
     if(heartbeat->id == socketFd)
     {
-      Send(heartbeatMsgBuf);
-      JobDispatcher::GetApi()->RaiseEventIn(HEARTBEAT_TIMEOUT, heartbeat, HEARTBEAT_PERIODICITY);
+      if(active)
+      {
+        Send(heartbeatMsgBuf);
+        JobDispatcher::GetApi()->RaiseEventIn(HEARTBEAT_TIMEOUT, heartbeat, HEARTBEAT_PERIODICITY);
+      }
+      else
+      {
+        std::unique_lock<std::mutex> lock(sendMutex);
+        lastExecNotification.notify_one();
+      }
     }
   }
   else
