@@ -3,13 +3,23 @@
 #include "pivision_events.h"
 #include "pivision_services.h"
 #include "pivision_grayscaleimagejob.h"
+#include "pivision_threadmodel.h"
 
-PiVisionGrayscaleImage::PiVisionGrayscaleImage()
+PiVisionGrayscaleImage::PiVisionGrayscaleImage() :
+numJobsOngoing(0u),
+NUM_JOBS_LIMIT(2u)
 {
   JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_SERVICE_AVAILABLE_IND, this);
+  JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_GRAYSCALE_JOB_COMPLETE_IND, this);
 
   auto subscribeService = std::make_shared<PiVisionSubscribeServiceInd>(PIVISION_COLOR_IMAGE_SERVICE_RX);
   JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_SUBSCRIBE_SERVICE_IND, subscribeService);
+}
+
+PiVisionGrayscaleImage::~PiVisionGrayscaleImage()
+{
+  JobDispatcher::GetApi()->UnsubscribeToEvent(PIVISION_EVENT_SERVICE_AVAILABLE_IND, this);
+  JobDispatcher::GetApi()->UnsubscribeToEvent(PIVISION_EVENT_GRAYSCALE_JOB_COMPLETE_IND, this);
 }
 
 void PiVisionGrayscaleImage::HandleEvent(const uint32_t eventNo, std::shared_ptr<EventDataBase> dataPtr)
@@ -18,10 +28,13 @@ void PiVisionGrayscaleImage::HandleEvent(const uint32_t eventNo, std::shared_ptr
   {
     case PIVISION_COLOR_IMAGE_SERVICE_RX:
     {
-      auto imageData = std::static_pointer_cast<PiVisionNewDataInd>(dataPtr);
-
-      auto grayscaleJob = std::make_shared<PiVisionGrayscaleImageJob>(imageData);
-      JobDispatcher::GetApi()->ExecuteJob(grayscaleJob);
+      if(NUM_JOBS_LIMIT > numJobsOngoing)
+      {
+        auto imageData = std::static_pointer_cast<PiVisionNewDataInd>(dataPtr);
+        auto grayscaleJob = std::make_shared<PiVisionGrayscaleImageJob>(imageData);
+        JobDispatcher::GetApi()->ExecuteJobInGroup(grayscaleJob, PIVISION_GRAYSCALE_JOB_THREAD_ID);
+        numJobsOngoing += 1u;
+      }
     }
     break;
     case PIVISION_EVENT_SERVICE_AVAILABLE_IND:
@@ -34,6 +47,11 @@ void PiVisionGrayscaleImage::HandleEvent(const uint32_t eventNo, std::shared_ptr
         auto serviceProvided = std::make_shared<PiVisionServiceAvailableInd>(PIVISION_BW_IMAGE_SERVICE_RX);
         JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_SERVICE_PROVIDED_IND, serviceProvided);
       }
+    }
+    break;
+    case PIVISION_EVENT_GRAYSCALE_JOB_COMPLETE_IND:
+    {
+      numJobsOngoing -= 1u;
     }
     break;
     default:

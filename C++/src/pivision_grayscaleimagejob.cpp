@@ -80,4 +80,6 @@ void PiVisionGrayscaleImageJob::Execute()
   auto newDataInd = std::make_shared<PiVisionNewDataInd>(PiVisionConnectionType::PIVISION_SERVER,
                                                          grayscaleImage);
   JobDispatcher::GetApi()->RaiseEvent(PIVISION_BW_IMAGE_SERVICE_TX, newDataInd);
+
+  JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_GRAYSCALE_JOB_COMPLETE_IND, nullptr);
 }
