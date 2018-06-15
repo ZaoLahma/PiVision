@@ -18,22 +18,40 @@ connType(_connType),
 serviceNo(_serviceNo),
 socketFd(_socketFd),
 ackMsg(0xDEADBEEFu),
-receivedAck(true)
+heartbeatMsg(0xBEA1BEA1),
+HEARTBEAT_TIMEOUT(0xBEA1BEA1u),
+HEARTBEAT_PERIODICITY(200u),
+receivedAck(false),
+ackEnabled(false)
 {
   ackMsgBuf = std::make_shared<PiVisionDataBuf>();
   for(uint32_t i = 0u; i < sizeof(ackMsg); ++i)
   {
     ackMsgBuf->push_back(0x000000FF & (ackMsg >> (i * 8u)));
   }
+
+  heartbeatMsgBuf = std::make_shared<PiVisionDataBuf>();
+  for(uint32_t i = 0u; i < sizeof(heartbeatMsg); ++i)
+  {
+    heartbeatMsgBuf->push_back(0x000000FF & (heartbeatMsg >> (i * 8u)));
+  }
+
   JobDispatcher::GetApi()->Log("New connection for service: %u", serviceNo);
   JobDispatcher::GetApi()->SubscribeToEvent(serviceNo + 1u, this);
+  JobDispatcher::GetApi()->SubscribeToEvent(HEARTBEAT_TIMEOUT, this);
   JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_STOP, this);
+
+  auto heartbeat = std::make_shared<PiVisionEthTermConnectionHBTimeout>(socketFd);
+  JobDispatcher::GetApi()->RaiseEventIn(HEARTBEAT_TIMEOUT, heartbeat, HEARTBEAT_PERIODICITY);
 }
 
 PiVisionEthTermConnection::~PiVisionEthTermConnection()
 {
   JobDispatcher::GetApi()->UnsubscribeToEvent(serviceNo + 1u, this);
+  JobDispatcher::GetApi()->UnsubscribeToEvent(HEARTBEAT_TIMEOUT, this);
   JobDispatcher::GetApi()->UnsubscribeToEvent(PIVISION_EVENT_STOP, this);
+
+  std::unique_lock<std::mutex> lock(sendMutex);
 }
 
 void PiVisionEthTermConnection::Receive(const uint32_t numBytesToGet, std::shared_ptr<PiVisionDataBuf> dataBuf)
@@ -211,31 +229,43 @@ void PiVisionEthTermConnection::Execute()
                  (*dataBuf)[3] == (*ackMsgBuf)[3]);
       }
 
-      if(!isAck)
+      bool isHeartbeat = false;
+      if(sizeof(heartbeatMsg) <= payloadLength)
+      {
+        isHeartbeat = ((*dataBuf)[0] == (*heartbeatMsgBuf)[0] &&
+                       (*dataBuf)[1] == (*heartbeatMsgBuf)[1] &&
+                       (*dataBuf)[2] == (*heartbeatMsgBuf)[2] &&
+                       (*dataBuf)[3] == (*heartbeatMsgBuf)[3]);
+      }
+
+      if((!isAck) && (!isHeartbeat))
       {
         auto newData = std::make_shared<PiVisionNewDataInd>(connType, dataBuf);
         JobDispatcher::GetApi()->RaiseEvent(serviceNo, newData);
-        Send(ackMsgBuf);
+        if(ackEnabled)
+        {
+          Send(ackMsgBuf);
+        }
+      }
+      else if(isAck)
+      {
+        receivedAck = true;
+        if(!ackEnabled)
+        {
+          JobDispatcher::GetApi()->Log("PiVisionEthTermConnection - Ack enabled for service %u", serviceNo);
+        }
+        ackEnabled = true;
       }
       else
       {
-        receivedAck = true;
+        /* heartbeat - do nothing */
       }
     }
-
-    // /* Rudimentary keep alive functionality */
-    // if(active)
-    // {
-    //   uint32_t txEventNo = serviceNo + 1u;
-    //   PiVisionDataBuf buf;
-    //   auto heartbeat = std::make_shared<PiVisionNewDataInd>(buf);
-    //   JobDispatcher::GetApi()->RaiseEvent(txEventNo, heartbeat);
-    // }
   }
 
   JobDispatcher::GetApi()->UnsubscribeToEvent(serviceNo + 1u, this);
 
-  JobDispatcher::GetApi()->Log("Disconnected from service %u", serviceNo);
+  JobDispatcher::GetApi()->Log("PiVisionEthTermConnection - Disconnected from service %u", serviceNo);
 
   PiVisionServiceStatus status = PiVisionServiceStatus::SERVICE_DISCONNECTED;
   auto connectionStatusIndInd = std::make_shared<PiVisionConnectionStatusInd>(status, serviceNo, -1);
@@ -248,7 +278,7 @@ void PiVisionEthTermConnection::HandleEvent(const uint32_t eventNo, std::shared_
 {
   if(serviceNo + 1u == eventNo)
   {
-    if(receivedAck)
+    if((receivedAck) || (!ackEnabled))
     {
       auto newData = std::static_pointer_cast<PiVisionNewDataInd>(dataPtr);
 
@@ -257,6 +287,15 @@ void PiVisionEthTermConnection::HandleEvent(const uint32_t eventNo, std::shared_
         receivedAck = false;
         Send(newData->dataBuf);
       }
+    }
+  }
+  else if(HEARTBEAT_TIMEOUT == eventNo)
+  {
+    auto heartbeat = std::static_pointer_cast<PiVisionEthTermConnectionHBTimeout>(dataPtr);
+    if(heartbeat->id == socketFd)
+    {
+      Send(heartbeatMsgBuf);
+      JobDispatcher::GetApi()->RaiseEventIn(HEARTBEAT_TIMEOUT, heartbeat, HEARTBEAT_PERIODICITY);
     }
   }
   else

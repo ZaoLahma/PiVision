@@ -7,6 +7,21 @@
 
 #include <mutex>
 
+class PiVisionEthTermConnectionHBTimeout : public EventDataBase
+{
+private:
+  PiVisionEthTermConnectionHBTimeout();
+
+protected:
+
+public:
+  const int32_t id;
+  PiVisionEthTermConnectionHBTimeout(const int32_t _id) : id(_id)
+  {
+
+  }
+};
+
 class PiVisionEthTermConnection : public JobBase, public EventListenerBase
 {
 private:
@@ -20,8 +35,13 @@ private:
   const int32_t socketFd;
   std::mutex sendMutex;
   const uint32_t ackMsg;
+  const uint32_t heartbeatMsg;
+  const uint32_t HEARTBEAT_TIMEOUT;
+  const uint32_t HEARTBEAT_PERIODICITY;
   bool receivedAck;
+  bool ackEnabled;
   std::shared_ptr<PiVisionDataBuf> ackMsgBuf;
+  std::shared_ptr<PiVisionDataBuf> heartbeatMsgBuf;
 
 protected:
 

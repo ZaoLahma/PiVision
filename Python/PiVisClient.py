@@ -78,14 +78,14 @@ class PiVisClient:
     def receive(self):
         print("Receive started")
         while self.active:
-            headerSize = 4 # 4 bytes image size
+            headerSize = 4 # 4 bytes TL header size
 
             header = self.__receiveInternal(headerSize)
 
             imageSize = bytearray(header[0:4])
             imageSize = struct.unpack("<L", imageSize)[0]
 
-            if 0 is not imageSize:
+            if 0 is not imageSize and 1 is not imageSize:
                 receiveBuf = self.__receiveInternal(imageSize)
 
                 tmpBuf = []
