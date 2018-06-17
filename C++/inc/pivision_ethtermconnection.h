@@ -35,6 +35,7 @@ private:
   const uint32_t serviceNo;
   const int32_t socketFd;
   std::mutex sendMutex;
+  std::mutex exitMutex;
   std::condition_variable lastExecNotification;
   const uint32_t ackMsg;
   const uint32_t heartbeatMsg;
@@ -42,6 +43,7 @@ private:
   const uint32_t HEARTBEAT_PERIODICITY;
   bool receivedAck;
   bool ackEnabled;
+  bool lastHeartbeatReceived;
   std::shared_ptr<PiVisionDataBuf> ackMsgBuf;
   std::shared_ptr<PiVisionDataBuf> heartbeatMsgBuf;
 

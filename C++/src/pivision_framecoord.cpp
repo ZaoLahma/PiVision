@@ -4,6 +4,8 @@
 #include "pivision_services.h"
 #include <iostream>
 
+const uint32_t FRAMECOORD_SHUTDOWN_TIMEOUT = 0xFF00FF00u;
+
 PiVisionFrameCoord::PiVisionFrameCoord() :
 currFrame(0u),
 cameraServiceAvailable(false)
@@ -12,6 +14,7 @@ cameraServiceAvailable(false)
     JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_SERVICE_UNAVAILABLE_IND, this);
     JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_STOP, this);
     JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_CAMERA_SERVICE_RX, this);
+    JobDispatcher::GetApi()->SubscribeToEvent(FRAMECOORD_SHUTDOWN_TIMEOUT, this);
 
     auto subscribeService = std::make_shared<PiVisionSubscribeServiceInd>(PIVISION_CAMERA_SERVICE_RX);
     JobDispatcher::GetApi()->RaiseEvent(PIVISION_EVENT_SUBSCRIBE_SERVICE_IND, subscribeService);
@@ -55,6 +58,9 @@ void PiVisionFrameCoord::HandleEvent(const uint32_t eventNo,
     }
     break;
     case PIVISION_EVENT_STOP:
+      JobDispatcher::GetApi()->RaiseEventIn(FRAMECOORD_SHUTDOWN_TIMEOUT, nullptr, 3000u);
+      break;
+    case FRAMECOORD_SHUTDOWN_TIMEOUT:
       JobDispatcher::GetApi()->NotifyExecutionFinished();
       break;
     default:
