@@ -1,7 +1,7 @@
 CCOMMAND = g++
 CFLAGS = -Wall -c -Wextra -g --std=c++11
 LINKARGS = -lpthread
-SOURCES = $(wildcard src/*.cpp)
+SOURCES = $(wildcard src/*.cpp submodules/ThreadFramework/src/*.cpp submodules/ThreadFramework/src/internal/*.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
 RELEASE_SOURCES = $(wildcard src/main/*/*.cpp)
 RELEASE_OBJECTS = $(RELEASE_SOURCES:.cpp=.o)
@@ -10,21 +10,6 @@ INC_DIRS = -I./inc -I./submodules/ThreadFramework/inc
 COLOR_EXE_NAME = PiVision_COLOR
 BW_EXE_NAME = PiVision_BW
 FULL_EXE_NAME = PiVision_FULL
-
-UNAME_S := $(shell uname -s)
-UNAME_M := $(shell uname -m)
-ifeq ($(UNAME_S),Linux)
-ifeq ($(UNAME_M),armv7l)
-	LINKARGS += ./submodules/ThreadFramework/lib_linux_arm/jobdispatcher.a
-endif
-ifeq ($(UNAME_M),x86_64)
-	LINKARGS += ./submodules/ThreadFramework/lib_linux_x86/jobdispatcher.a
-endif
-endif
-
-ifeq ($(UNAME_S),Darwin)
-	LINKARGS += ./submodules/ThreadFramework/lib_osx/jobdispatcher.a
-endif
 
 $(FULL_EXE_NAME): RELEASE_SOURCES = $(wildcard src/main/full/*.cpp)
 $(FULL_EXE_NAME): $(OBJECTS) $(RELEASE_OBJECTS)
