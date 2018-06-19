@@ -121,7 +121,62 @@ enum class PiVisionConnectionType
   PIVISION_CLIENT
 };
 
-typedef std::vector<unsigned char> PiVisionDataBuf;
+class PiVisionData
+{
+private:
+  PiVisionData();
+  uint8_t* buf;
+  const uint32_t capacity;
+  uint32_t size;
+
+protected:
+
+public:
+  PiVisionData(const uint32_t _capacity) : capacity(_capacity), size(0u)
+  {
+    buf = new uint8_t[capacity];
+  }
+
+  ~PiVisionData()
+  {
+    delete[] buf;
+    buf = nullptr;
+  }
+
+  uint32_t Append(uint8_t* data, uint32_t dataSize)
+  {
+    uint32_t retVal = 0u;
+    if((size + dataSize) <= capacity)
+    {
+      (void) memcpy(&buf[size], data, dataSize);
+      size += dataSize;
+      retVal = size;
+    }
+    return retVal;
+  }
+
+  uint32_t GetSize()
+  {
+    return size;
+  }
+
+  uint32_t GetCapacity()
+  {
+    return capacity;
+  }
+
+  uint8_t GetElementAt(const uint32_t index)
+  {
+    uint8_t retVal = 0x0u;
+
+    if(index < size)
+    {
+      retVal = buf[index];
+    }
+
+    return retVal;
+  }
+};
 
 class PiVisionNewDataInd : public EventDataBase
 {
@@ -131,14 +186,14 @@ private:
 protected:
 
 public:
-  PiVisionNewDataInd(const PiVisionConnectionType _connType, const std::shared_ptr<PiVisionDataBuf> _buf) :
+  PiVisionNewDataInd(const PiVisionConnectionType _connType, const std::shared_ptr<PiVisionData> _buf) :
   connType(_connType),
-  dataBuf(_buf)
+  data(_buf)
   {
 
   }
   const PiVisionConnectionType connType;
-  const std::shared_ptr<PiVisionDataBuf> dataBuf;
+  const std::shared_ptr<PiVisionData> data;
 };
 
 class PiVisionSubscribeServiceInd : public EventDataBase

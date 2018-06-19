@@ -25,16 +25,18 @@ receivedAck(false),
 ackEnabled(false),
 lastHeartbeatReceived(false)
 {
-  ackMsgBuf = std::make_shared<PiVisionDataBuf>();
-  for(uint32_t i = 0u; i < sizeof(ackMsg); ++i)
+  ackMsgBuf = std::make_shared<PiVisionData>(sizeof(ackMsg));
+  for(uint32_t i = 0u; i < ackMsgBuf->GetCapacity(); ++i)
   {
-    ackMsgBuf->push_back(0x000000FF & (ackMsg >> (i * 8u)));
+    uint8_t byte = (0x000000FF & (ackMsg >> (i * 8u)));
+    ackMsgBuf->Append(&byte, 1u);
   }
 
-  heartbeatMsgBuf = std::make_shared<PiVisionDataBuf>();
-  for(uint32_t i = 0u; i < sizeof(heartbeatMsg); ++i)
+  heartbeatMsgBuf = std::make_shared<PiVisionData>(sizeof(heartbeatMsg));
+  for(uint32_t i = 0u; i < heartbeatMsgBuf->GetCapacity(); ++i)
   {
-    heartbeatMsgBuf->push_back(0x000000FF & (heartbeatMsg >> (i * 8u)));
+    uint8_t byte = (0x000000FF & (heartbeatMsg >> (i * 8u)));
+    heartbeatMsgBuf->Append(&byte, 1u);
   }
 
   JobDispatcher::GetApi()->Log("New connection for service: %u", serviceNo);
@@ -63,7 +65,7 @@ PiVisionEthTermConnection::~PiVisionEthTermConnection()
   JobDispatcher::GetApi()->Log("Destroying connection instance for service %u", serviceNo);
 }
 
-void PiVisionEthTermConnection::Receive(const uint32_t numBytesToGet, std::shared_ptr<PiVisionDataBuf> dataBuf)
+void PiVisionEthTermConnection::Receive(const uint32_t numBytesToGet, std::shared_ptr<PiVisionData> dataBuf)
 {
   const uint32_t MAX_CHUNK_SIZE = 4096u;
   unsigned char buffer[MAX_CHUNK_SIZE];
@@ -107,10 +109,7 @@ void PiVisionEthTermConnection::Receive(const uint32_t numBytesToGet, std::share
     {
       numReceiveAttempts = 0u;
       numBytesReceived += chunkSize;
-      for(uint32_t i = 0; i < (uint32_t)chunkSize; ++i)
-      {
-        dataBuf->push_back(buffer[i]);
-      }
+      dataBuf->Append(buffer, chunkSize);
     }
     else if(!active)
     {
@@ -126,28 +125,28 @@ void PiVisionEthTermConnection::Receive(const uint32_t numBytesToGet, std::share
   }
 }
 
-void PiVisionEthTermConnection::Send(const std::shared_ptr<PiVisionDataBuf> dataBuf)
+void PiVisionEthTermConnection::Send(const std::shared_ptr<PiVisionData> dataBuf)
 {
   std::unique_lock<std::mutex> lock(sendMutex);
   SendHeader(dataBuf);
   SendPayload(dataBuf);
 }
 
-void PiVisionEthTermConnection::SendHeader(const std::shared_ptr<PiVisionDataBuf> dataBuf)
+void PiVisionEthTermConnection::SendHeader(const std::shared_ptr<PiVisionData> dataBuf)
 {
-  uint32_t dataSize = dataBuf->size();
+  uint32_t dataSize = dataBuf->GetSize();
 
-  auto header = std::make_shared<PiVisionDataBuf>();
-  for(uint32_t i = 0u; i < sizeof(uint32_t); ++i)
+  auto header = std::make_shared<PiVisionData>(sizeof(uint32_t));
+  for(uint32_t i = 0u; i < header->GetCapacity(); ++i)
   {
     uint8_t byte = 0x000000FF & (dataSize >> i * 8);
-    header->push_back(byte);
+    header->Append(&byte, 1u);
   }
 
   SendPayload(header);
 }
 
-void PiVisionEthTermConnection::SendPayload(const std::shared_ptr<PiVisionDataBuf> dataBuf)
+void PiVisionEthTermConnection::SendPayload(const std::shared_ptr<PiVisionData> dataBuf)
 {
   const uint32_t MAX_CHUNK_SIZE = 4096u;
   unsigned char buffer[MAX_CHUNK_SIZE];
@@ -156,7 +155,7 @@ void PiVisionEthTermConnection::SendPayload(const std::shared_ptr<PiVisionDataBu
   uint32_t numAttempts = 0u;
 
   uint32_t numBytesSent = 0u;
-  uint32_t numBytesToSend = dataBuf->size();
+  uint32_t numBytesToSend = dataBuf->GetSize();
   while(numBytesSent < numBytesToSend)
   {
     uint32_t maxChunkSize = std::min(MAX_CHUNK_SIZE, numBytesToSend - numBytesSent);
@@ -165,7 +164,7 @@ void PiVisionEthTermConnection::SendPayload(const std::shared_ptr<PiVisionDataBu
     uint32_t bufferIndex = 0u;
     for(uint32_t i = numBytesSent; i < numBytesSent + maxChunkSize; ++i)
     {
-      buffer[bufferIndex] = (*dataBuf)[i];
+      buffer[bufferIndex] = dataBuf->GetElementAt(i);
       bufferIndex += 1u;
     }
 
@@ -213,18 +212,19 @@ void PiVisionEthTermConnection::Execute()
 {
   while(active)
   {
-    auto dataBuf = std::make_shared<PiVisionDataBuf>();
-
     const uint32_t PAYLOAD_SIZE_HEADER_SIZE = 4u;
+
+    auto dataBuf = std::make_shared<PiVisionData>(PAYLOAD_SIZE_HEADER_SIZE);
+
     Receive(PAYLOAD_SIZE_HEADER_SIZE, dataBuf);
 
     uint32_t payloadLength = 0u;
-    for(uint32_t i = 0u; i < dataBuf->size(); ++i)
+    for(uint32_t i = 0u; i < dataBuf->GetSize(); ++i)
     {
-      payloadLength = payloadLength | ((*dataBuf)[i] << (i * 8u));
+      payloadLength = payloadLength | (dataBuf->GetElementAt(i) << (i * 8u));
     }
 
-    dataBuf->clear();
+    dataBuf = std::make_shared<PiVisionData>(payloadLength);
     Receive(payloadLength, dataBuf);
 
     if(0 < payloadLength)
@@ -232,19 +232,19 @@ void PiVisionEthTermConnection::Execute()
       bool isAck = false;
       if(sizeof(ackMsg) <= payloadLength)
       {
-        isAck = ((*dataBuf)[0] == (*ackMsgBuf)[0] &&
-                 (*dataBuf)[1] == (*ackMsgBuf)[1] &&
-                 (*dataBuf)[2] == (*ackMsgBuf)[2] &&
-                 (*dataBuf)[3] == (*ackMsgBuf)[3]);
+        isAck = (dataBuf->GetElementAt(0) == ackMsgBuf->GetElementAt(0 )&&
+                 dataBuf->GetElementAt(1) == ackMsgBuf->GetElementAt(1) &&
+                 dataBuf->GetElementAt(2) == ackMsgBuf->GetElementAt(2) &&
+                 dataBuf->GetElementAt(3) == ackMsgBuf->GetElementAt(3));
       }
 
       bool isHeartbeat = false;
       if(sizeof(heartbeatMsg) <= payloadLength)
       {
-        isHeartbeat = ((*dataBuf)[0] == (*heartbeatMsgBuf)[0] &&
-                       (*dataBuf)[1] == (*heartbeatMsgBuf)[1] &&
-                       (*dataBuf)[2] == (*heartbeatMsgBuf)[2] &&
-                       (*dataBuf)[3] == (*heartbeatMsgBuf)[3]);
+        isHeartbeat = (dataBuf->GetElementAt(0) == heartbeatMsgBuf->GetElementAt(0) &&
+                       dataBuf->GetElementAt(1) == heartbeatMsgBuf->GetElementAt(1) &&
+                       dataBuf->GetElementAt(2) == heartbeatMsgBuf->GetElementAt(2) &&
+                       dataBuf->GetElementAt(3) == heartbeatMsgBuf->GetElementAt(3));
       }
 
       if((!isAck) && (!isHeartbeat))
@@ -294,7 +294,7 @@ void PiVisionEthTermConnection::HandleEvent(const uint32_t eventNo, std::shared_
       if(connType == newData->connType)
       {
         receivedAck = false;
-        Send(newData->dataBuf);
+        Send(newData->data);
       }
     }
   }

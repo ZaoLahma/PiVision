@@ -26,10 +26,10 @@ public:
 class PiVisionEthTermConnection : public JobBase, public EventListenerBase
 {
 private:
-  void Receive(const uint32_t numBytesToGet, std::shared_ptr<PiVisionDataBuf> dataBuf);
-  void SendHeader(const std::shared_ptr<PiVisionDataBuf> dataBuf);
-  void SendPayload(const std::shared_ptr<PiVisionDataBuf> dataBuf);
-  void Send(const std::shared_ptr<PiVisionDataBuf> dataBuf);
+  void Receive(const uint32_t numBytesToGet, std::shared_ptr<PiVisionData> dataBuf);
+  void SendHeader(const std::shared_ptr<PiVisionData> dataBuf);
+  void SendPayload(const std::shared_ptr<PiVisionData> dataBuf);
+  void Send(const std::shared_ptr<PiVisionData> dataBuf);
   bool active;
   const PiVisionConnectionType connType;
   const uint32_t serviceNo;
@@ -43,9 +43,9 @@ private:
   const uint32_t HEARTBEAT_PERIODICITY;
   bool receivedAck;
   bool ackEnabled;
-  bool lastHeartbeatReceived;
-  std::shared_ptr<PiVisionDataBuf> ackMsgBuf;
-  std::shared_ptr<PiVisionDataBuf> heartbeatMsgBuf;
+  bool lastHeartbeatReceived;  
+  std::shared_ptr<PiVisionData> ackMsgBuf;
+  std::shared_ptr<PiVisionData> heartbeatMsgBuf;
 
 protected:
 
