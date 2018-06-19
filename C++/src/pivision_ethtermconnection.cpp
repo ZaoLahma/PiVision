@@ -305,7 +305,6 @@ void PiVisionEthTermConnection::HandleEvent(const uint32_t eventNo, std::shared_
     {
       if(active)
       {
-        JobDispatcher::GetApi()->Log("Heartbeat for service %u", serviceNo);
         Send(heartbeatMsgBuf);
         JobDispatcher::GetApi()->RaiseEventIn(HEARTBEAT_TIMEOUT, heartbeat, HEARTBEAT_PERIODICITY);
       }
