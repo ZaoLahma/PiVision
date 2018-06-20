@@ -21,8 +21,8 @@ ackMsg(0xDEADBEEFu),
 heartbeatMsg(0xBEA1BEA1),
 HEARTBEAT_TIMEOUT(0xBEA1BEA1u),
 HEARTBEAT_PERIODICITY(200u),
-receivedAck(false),
-ackEnabled(false),
+receivedAck(true),
+ackEnabled(true),
 lastHeartbeatReceived(false)
 {
   ackMsgBuf = std::make_shared<PiVisionData>(sizeof(ackMsg));
