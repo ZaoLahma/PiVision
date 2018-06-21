@@ -21,9 +21,12 @@ ackMsg(0xDEADBEEFu),
 heartbeatMsg(0xBEA1BEA1),
 HEARTBEAT_TIMEOUT(0xBEA1BEA1u),
 HEARTBEAT_PERIODICITY(200u),
+pidMsg(0x61D61D61u),
 receivedAck(true),
 ackEnabled(true),
-lastHeartbeatReceived(false)
+lastHeartbeatReceived(false),
+isInSameProcess(false),
+sentPid(false)
 {
   ackMsgBuf = std::make_shared<PiVisionData>(sizeof(ackMsg));
   for(uint32_t i = 0u; i < ackMsgBuf->GetCapacity(); ++i)
@@ -37,6 +40,20 @@ lastHeartbeatReceived(false)
   {
     uint8_t byte = (0x000000FF & (heartbeatMsg >> (i * 8u)));
     heartbeatMsgBuf->Append(&byte, 1u);
+  }
+
+  pidMsgBuf = std::make_shared<PiVisionData>(sizeof(uint32_t) * 2u);
+  for(uint32_t i = 0u; i < sizeof(uint32_t); ++i)
+  {
+    uint8_t byte = (0x000000FF & (pidMsg >> (i * 8u)));
+    pidMsgBuf->Append(&byte, 1u);
+  }
+
+  uint32_t ownPid = GetOwnPid();
+  for(uint32_t i = 0u; i < sizeof(uint32_t); ++i)
+  {
+    uint8_t byte = (0x000000FF & (ownPid >> (i * 8u)));
+    pidMsgBuf->Append(&byte, 1u);
   }
 
   JobDispatcher::GetApi()->Log("New connection for service: %u", serviceNo);
@@ -208,6 +225,14 @@ void PiVisionEthTermConnection::SendPayload(const std::shared_ptr<PiVisionData> 
   }
 }
 
+uint32_t PiVisionEthTermConnection::GetOwnPid()
+{
+  uint32_t retVal = 0xFFFFFFFFu;
+  retVal = getpid();
+
+  return retVal;
+}
+
 void PiVisionEthTermConnection::Execute()
 {
   while(active)
@@ -247,7 +272,16 @@ void PiVisionEthTermConnection::Execute()
                        dataBuf->GetElementAt(3) == heartbeatMsgBuf->GetElementAt(3));
       }
 
-      if((!isAck) && (!isHeartbeat))
+      bool isPid = false;
+      if(sizeof(pidMsg) <= payloadLength)
+      {
+        isPid = (dataBuf->GetElementAt(0) == pidMsgBuf->GetElementAt(0) &&
+                 dataBuf->GetElementAt(1) == pidMsgBuf->GetElementAt(1) &&
+                 dataBuf->GetElementAt(2) == pidMsgBuf->GetElementAt(2) &&
+                 dataBuf->GetElementAt(3) == pidMsgBuf->GetElementAt(3));
+      }
+
+      if((!isAck) && (!isHeartbeat) && (!isPid))
       {
         auto newData = std::make_shared<PiVisionNewDataInd>(connType, dataBuf);
         JobDispatcher::GetApi()->RaiseEvent(serviceNo, newData);
@@ -264,6 +298,22 @@ void PiVisionEthTermConnection::Execute()
           JobDispatcher::GetApi()->Log("PiVisionEthTermConnection - Ack enabled for service %u", serviceNo);
         }
         ackEnabled = true;
+      }
+      else if(isPid)
+      {
+        uint32_t otherPid = 0x0u;
+        for(uint32_t i = 0; i < sizeof(otherPid); ++i)
+        {
+          otherPid = otherPid | (dataBuf->GetElementAt(i + sizeof(uint32_t)) << (i * 8));
+        }
+
+        uint32_t ownPid = GetOwnPid();
+        isInSameProcess = (otherPid == ownPid);
+
+        if(isInSameProcess)
+        {
+          JobDispatcher::GetApi()->Log("PiVisionEthTermConnection - Service %u is in same process", serviceNo);
+        }
       }
       else
       {
@@ -287,14 +337,21 @@ void PiVisionEthTermConnection::HandleEvent(const uint32_t eventNo, std::shared_
 {
   if(serviceNo + 1u == eventNo)
   {
-    if((receivedAck) || (!ackEnabled))
+    if((receivedAck) || (!ackEnabled) || (isInSameProcess))
     {
       auto newData = std::static_pointer_cast<PiVisionNewDataInd>(dataPtr);
 
       if(connType == newData->connType)
       {
-        receivedAck = false;
-        Send(newData->data);
+        if(!isInSameProcess)
+        {
+          receivedAck = false;
+          Send(newData->data);
+        }
+        else
+        {
+          JobDispatcher::GetApi()->RaiseEvent(serviceNo, newData);
+        }
       }
     }
   }
@@ -305,6 +362,11 @@ void PiVisionEthTermConnection::HandleEvent(const uint32_t eventNo, std::shared_
     {
       if(active)
       {
+        if(!sentPid && (connType == PiVisionConnectionType::PIVISION_CLIENT))
+        {
+          sentPid = true;
+          Send(pidMsgBuf);
+        }
         Send(heartbeatMsgBuf);
         JobDispatcher::GetApi()->RaiseEventIn(HEARTBEAT_TIMEOUT, heartbeat, HEARTBEAT_PERIODICITY);
       }

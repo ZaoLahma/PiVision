@@ -30,6 +30,7 @@ private:
   void SendHeader(const std::shared_ptr<PiVisionData> dataBuf);
   void SendPayload(const std::shared_ptr<PiVisionData> dataBuf);
   void Send(const std::shared_ptr<PiVisionData> dataBuf);
+  uint32_t GetOwnPid();
   bool active;
   const PiVisionConnectionType connType;
   const uint32_t serviceNo;
@@ -41,11 +42,15 @@ private:
   const uint32_t heartbeatMsg;
   const uint32_t HEARTBEAT_TIMEOUT;
   const uint32_t HEARTBEAT_PERIODICITY;
+  const uint32_t pidMsg;
   bool receivedAck;
   bool ackEnabled;
-  bool lastHeartbeatReceived;  
+  bool lastHeartbeatReceived;
+  bool isInSameProcess;
+  bool sentPid;
   std::shared_ptr<PiVisionData> ackMsgBuf;
   std::shared_ptr<PiVisionData> heartbeatMsgBuf;
+  std::shared_ptr<PiVisionData> pidMsgBuf;
 
 protected:
 
