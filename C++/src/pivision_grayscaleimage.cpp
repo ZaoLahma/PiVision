@@ -7,7 +7,7 @@
 
 PiVisionGrayscaleImage::PiVisionGrayscaleImage() :
 numJobsOngoing(0u),
-NUM_JOBS_LIMIT(2u)
+NUM_JOBS_LIMIT(1u)
 {
   JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_SERVICE_AVAILABLE_IND, this);
   JobDispatcher::GetApi()->SubscribeToEvent(PIVISION_EVENT_GRAYSCALE_JOB_COMPLETE_IND, this);
