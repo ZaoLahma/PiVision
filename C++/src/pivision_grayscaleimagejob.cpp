@@ -74,7 +74,7 @@ void PiVisionGrayscaleImageJob::Execute()
       }
 
       uint8_t byte = (uint8_t)colorIntensity;
-      grayscaleImage->Append(&byte, 1u);
+      grayscaleImage->Append(&byte, sizeof(byte));
     }
   }
 

@@ -18,8 +18,7 @@ NUM_JOBS_LIMIT(4u)
 
 PiVisionGrayscaleImage::~PiVisionGrayscaleImage()
 {
-  JobDispatcher::GetApi()->UnsubscribeToEvent(PIVISION_EVENT_SERVICE_AVAILABLE_IND, this);
-  JobDispatcher::GetApi()->UnsubscribeToEvent(PIVISION_EVENT_GRAYSCALE_JOB_COMPLETE_IND, this);
+
 }
 
 void PiVisionGrayscaleImage::HandleEvent(const uint32_t eventNo, std::shared_ptr<EventDataBase> dataPtr)
