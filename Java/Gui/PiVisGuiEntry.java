@@ -13,10 +13,8 @@ public class PiVisGuiEntry
     PiVisClient client = new PiVisClient(imageDataService);
 
 
-    //while(true)
+    while(true)
     {
-      client.run();
-      client.run();
       client.run();
     }
   }

@@ -115,7 +115,6 @@ void PiVisionEthTermServiceListener::initiateServerSocketFd()
     exit(1);
   }
 
-
   for(p = servinfo; p != 0; p = p->ai_next)
   {
       if ((serverSocket = socket(p->ai_family, p->ai_socktype,
@@ -161,6 +160,8 @@ void PiVisionEthTermServiceListener::initiateServerSocketFd()
   setsockopt(serverSocket, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
 }
 
+#include <stdio.h>
+
 void PiVisionEthTermServiceListener::handleNewServiceDiscoveryRequests()
 {
 	char messageBuf[50];
@@ -174,22 +175,32 @@ void PiVisionEthTermServiceListener::handleNewServiceDiscoveryRequests()
 
 	char header[] = "WHERE_IS_";
 
+	messageBuf[bytesReceived] = '\0';
+
 	if(bytesReceived > (int)strlen(header))
 	{
-		messageBuf[bytesReceived] = '\0';
+    const bool isServiceRequest = (0 == memcmp(header, messageBuf, sizeof(header) - 1u));
+    
+    if(isServiceRequest)
+    {
+      char* portNoStr = &messageBuf[strlen(header)];
+      uint32_t portNo = atoi(portNoStr);
 
-		char* portNoStr = &messageBuf[strlen(header)];
-		uint32_t portNo = atoi(portNoStr);
-
-		if(serviceNo == portNo)
-		{
-			JobDispatcher::GetApi()->Log("Service %u provided. Responding to: %s", portNo, inet_ntoa(addr.sin_addr));
-			sendto(serviceDiscoverySocket, ownIpAddress, INET_ADDRSTRLEN, 0, (struct sockaddr*)&addr, sizeof(addr));
-		}
-		else
-		{
-			JobDispatcher::GetApi()->Log("Service %u not provided", portNo);
-		}
+      if(serviceNo == portNo)
+      {
+        JobDispatcher::GetApi()->Log("Service %u provided. Responding to: %s", portNo, inet_ntoa(addr.sin_addr));
+        sendto(serviceDiscoverySocket, ownIpAddress, INET_ADDRSTRLEN, 0, (struct sockaddr*)&addr, sizeof(addr));
+      }
+      else
+      {
+        JobDispatcher::GetApi()->Log("Service %u not provided", portNo);
+      }
+    }
+    else
+    {
+      JobDispatcher::GetApi()->Log("Received unknown data: %s, %u", messageBuf, memcmp(header, messageBuf, sizeof(header) - 1u));
+      handleNewServiceDiscoveryRequests();
+    }
 	}
 }
 
