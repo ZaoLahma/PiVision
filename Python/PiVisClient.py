@@ -12,7 +12,6 @@ class PiVisClient:
         self.active = True
         self.receiveFinished = False
         self.lock = multiprocessing.Lock()
-        self.serviceNo = -1
         self.portNo = portNo
         self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.serviceDiscoverySocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
