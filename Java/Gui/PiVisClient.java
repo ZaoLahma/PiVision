@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.EOFException;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import pivision.java.gui.PiVisClientDataReceiver;
 
 public class PiVisClient
 {
@@ -27,11 +28,14 @@ public class PiVisClient
   private MulticastSocket serviceDiscoverySocket = null;
   private String serviceAddress = null;
   private Socket serviceSocket = null;
+  private PiVisClientDataReceiver dataReceiver = null;
+  private boolean active;
 
   public PiVisClient(final int service)
   {
     state = PiVisClient.PiVisClientState.INIT_SERVICE_DISCOVERY_SOCKET;
     serviceNo = service;
+    active = true;
   }
 
   private void initServiceDiscoverySocket()
@@ -40,6 +44,9 @@ public class PiVisClient
     {
       System.out.println("initServiceDiscoverySocket");
       serviceDiscoverySocket = new MulticastSocket(serviceNo);
+      final InetAddress group = InetAddress.getByName(multicastGroup);
+      //serviceDiscoverySocket.joinGroup(group);
+      serviceDiscoverySocket.setLoopbackMode(true);
       System.out.println("Socket created");
       final int twoSeconds = 2 * 1000;
       serviceDiscoverySocket.setSoTimeout(twoSeconds);    
@@ -70,9 +77,17 @@ public class PiVisClient
       serviceDiscoverySocket.receive(packetToReceive);
       serviceAddress = new String(payload);
       System.out.println(serviceAddress);
-      serviceDiscoverySocket.close();
-      serviceDiscoverySocket = null;
-      state = PiVisClient.PiVisClientState.CONNECT_SERVICE;
+      if(!serviceAddress.contains(serviceDiscoveryPayload))
+      {
+        serviceDiscoverySocket.close();
+        serviceDiscoverySocket = null;
+        System.out.println("serviceAddress: " + serviceAddress + " serviceDiscoveryPayload: " + serviceDiscoveryPayload);
+        state = PiVisClient.PiVisClientState.CONNECT_SERVICE;
+      }
+      else
+      {
+        System.out.println("SAME!!!");
+      }
     }
     catch(UnknownHostException exception)
     {
@@ -99,6 +114,7 @@ public class PiVisClient
       serviceSocket.setSoTimeout(oneSecond);        
       serviceSocket.connect(new InetSocketAddress(serviceAddress, serviceNo));
       state = PiVisClient.PiVisClientState.CONNECTED;
+      System.out.println("PiVisClient connected to server");
     }
     catch(UnknownHostException exception)
     {
@@ -121,13 +137,22 @@ public class PiVisClient
     {
       DataInputStream networkInput = new DataInputStream(serviceSocket.getInputStream());
       int numBytesToReceive = Integer.reverseBytes(networkInput.readInt());
-      System.out.println(numBytesToReceive);
+      //System.out.println(numBytesToReceive);
       byte[] payload = new byte[numBytesToReceive];
       networkInput.readFully(payload, 0, payload.length);
       DataOutputStream networkOutput = new DataOutputStream(serviceSocket.getOutputStream());
-      int ackMsg = 0xDEADBEEF;
-      networkOutput.writeInt(Integer.reverseBytes(ackMsg));
-      System.out.println("Sent ackMsg");
+      final int ackMsgHeader = 4;
+      networkOutput.writeInt(Integer.reverseBytes(ackMsgHeader));
+      final int ackMsgPayload = 0xDEADBEEF;
+      networkOutput.writeInt(Integer.reverseBytes(ackMsgPayload));
+      //System.out.println("Sent ackMsg");
+      if(4 != numBytesToReceive)
+      {
+        if(null != dataReceiver)
+        {
+          dataReceiver.update(payload);
+        }
+      }
     }
     catch(EOFException exception)
     {
@@ -140,9 +165,23 @@ public class PiVisClient
     }
   }
 
+  public void setDataReceiver(PiVisClientDataReceiver dataReceiver)
+  {
+    this.dataReceiver = dataReceiver;
+  }
+
+  public boolean active()
+  {
+    return active;
+  }
+
+  public void stop()
+  {
+    active = false;
+  }
+
   public void run()
   {
-    System.out.println("run called");
     switch(state)
     {
       case INIT_SERVICE_DISCOVERY_SOCKET:

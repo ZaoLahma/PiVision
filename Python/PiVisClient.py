@@ -85,13 +85,11 @@ class PiVisClient:
             imageSize = struct.unpack("<L", imageSize)[0]
 
             if 0 is not imageSize and 1 is not imageSize:
-                receiveBuf = self.__receiveInternal(imageSize)
-
-                tmpBuf = []
-                tmpBuf += [PiVisConstants.GRAY_SCALE_IMAGE_TYPE]
-                tmpBuf += receiveBuf
+                receiveBuf = []
+                receiveBuf += [PiVisConstants.GRAY_SCALE_IMAGE_TYPE]
+                receiveBuf += self.__receiveInternal(imageSize)
                 self.lock.acquire()
-                self.data = tmpBuf
+                self.data = receiveBuf
                 self.receiveFinished = True
                 self.lock.release()
 
