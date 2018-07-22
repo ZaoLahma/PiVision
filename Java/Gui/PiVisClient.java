@@ -30,12 +30,25 @@ public class PiVisClient
   private Socket serviceSocket = null;
   private PiVisClientDataReceiver dataReceiver = null;
   private boolean active;
+  private long numBytesReceived = 0;
+  private long prevNumBytesReceived = 0;
+  private long prevTime = 0;
+  private int kBytesPerSec = 0;
 
   public PiVisClient(final int service)
   {
     state = PiVisClient.PiVisClientState.INIT_SERVICE_DISCOVERY_SOCKET;
     serviceNo = service;
     active = true;
+  }
+
+  private void sendAckMessage() throws IOException
+  {
+    DataOutputStream networkOutput = new DataOutputStream(serviceSocket.getOutputStream());
+    final int ackMsgHeader = 4;
+    networkOutput.writeInt(Integer.reverseBytes(ackMsgHeader));
+    final int ackMsgPayload = 0xDEADBEEF;
+    networkOutput.writeInt(Integer.reverseBytes(ackMsgPayload));
   }
 
   private void initServiceDiscoverySocket()
@@ -138,26 +151,57 @@ public class PiVisClient
       DataInputStream networkInput = new DataInputStream(serviceSocket.getInputStream());
       int numBytesToReceive = Integer.reverseBytes(networkInput.readInt());
       //System.out.println(numBytesToReceive);
-      byte[] payload = new byte[numBytesToReceive];
-      networkInput.readFully(payload, 0, payload.length);
-      DataOutputStream networkOutput = new DataOutputStream(serviceSocket.getOutputStream());
-      final int ackMsgHeader = 4;
-      networkOutput.writeInt(Integer.reverseBytes(ackMsgHeader));
-      final int ackMsgPayload = 0xDEADBEEF;
-      networkOutput.writeInt(Integer.reverseBytes(ackMsgPayload));
-      //System.out.println("Sent ackMsg");
-      if(4 != numBytesToReceive)
+      if(numBytesToReceive > 0)
       {
-        if(null != dataReceiver)
+        byte[] payload = new byte[numBytesToReceive];
+        networkInput.readFully(payload, 0, payload.length);
+
+        numBytesReceived += numBytesToReceive;
+        long time = System.currentTimeMillis();
+        int timeElapsed = (int) (time - prevTime);
+        prevTime = time;
+        if(timeElapsed > 0)
         {
-          dataReceiver.update(payload);
+          int numBytes = (int)(numBytesReceived - prevNumBytesReceived);
+          kBytesPerSec = (numBytes / timeElapsed);
+        }
+
+        sendAckMessage();
+        //System.out.println("Sent ackMsg");
+        if(4 != numBytesToReceive)
+        {
+          if(null != dataReceiver)
+          {
+            dataReceiver.update(payload);
+          }
         }
       }
     }
     catch(EOFException exception)
     {
       System.out.println(exception);
-      System.exit(0);
+      try
+      {
+        serviceSocket.close();
+      }
+      catch(IOException ioException)
+      {
+        System.out.println(ioException);
+      }
+      serviceSocket = null;
+      state = PiVisClient.PiVisClientState.INIT_SERVICE_DISCOVERY_SOCKET;
+    }
+    catch(SocketTimeoutException exception)
+    {
+      System.out.println(exception);
+      try
+      {
+        sendAckMessage();
+      }
+      catch(IOException ioException)
+      {
+        System.out.println(ioException);
+      }
     }
     catch(IOException exception)
     {
@@ -178,6 +222,11 @@ public class PiVisClient
   public void stop()
   {
     active = false;
+  }
+
+  public int getKBytesPerSec()
+  {
+    return kBytesPerSec;
   }
 
   public void run()

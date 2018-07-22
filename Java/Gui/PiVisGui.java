@@ -91,7 +91,42 @@ class GuiDrawPanel extends JPanel {
     private int width = 300;
     private int height = 300;
 
+    private int fps = 0;
+    private int highestFps = 0;
+    private int ticks = 0;
+    private long prevTime;
+
     private byte[] imageData;
+
+    private Color getFpsColor(final int fps)
+    {
+      int red = 0;
+      int green = 0;
+      int blue = 0;
+
+      if(fps > highestFps)
+      {
+        highestFps = fps;
+      }
+      
+      float fpsPercentage = 0;
+
+      if(highestFps > 0)
+      {
+        fpsPercentage = (float)fps / (float)highestFps;
+      }
+
+      int totalPixelIntensity = 2 * 255;
+
+      green = 120 + (int)(((255 - 120) * fpsPercentage) + 0.5);
+      red = 120 + (int)(((255 - 120) * (1 - fpsPercentage)) + 0.5);
+
+      System.out.println("green: " + Integer.toString(green));
+      System.out.println("red: " + Integer.toString(red));
+      System.out.println("fpsPercentage: " + Float.toString(fpsPercentage));
+
+      return new Color(red, green, blue);
+    }
 
     GuiDrawPanel(final int width, final int height)
     {
@@ -104,6 +139,8 @@ class GuiDrawPanel extends JPanel {
       {
         imageData[x] = (byte)0x0;
       }
+
+      prevTime = System.currentTimeMillis();
     }
 
     public Dimension getPreferredSize () 
@@ -141,6 +178,21 @@ class GuiDrawPanel extends JPanel {
             y += 1;
           }
         }
-      }    
+      }
+
+      long time = System.currentTimeMillis();
+      int timeElapsed = (int)(time - prevTime);
+      if(timeElapsed > 1000)
+      {
+        fps = timeElapsed * ticks / timeElapsed;
+        ticks = 0;
+        prevTime = time;
+      }
+      Color fpsColor = getFpsColor(fps);
+      g.setColor(fpsColor);
+      g.drawString("Current FPS: " + Integer.toString(fps), 10, 20);
+      ticks = ticks + 1;
+
+      //System.out.println("timeElapsed: " + Long.toString(timeElapsed) + ", fps: " + Integer.toString(fps));
     }
 }
