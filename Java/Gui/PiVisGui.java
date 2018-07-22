@@ -65,6 +65,7 @@ public class PiVisGui implements ActionListener, PiVisClientDataReceiver
   public void update(final byte[] data)
   {
     drawPanel.drawImage(data);
+    drawPanel.updateKBPerSec(client.getKBytesPerSec());
   }
 }
 
@@ -96,34 +97,33 @@ class GuiDrawPanel extends JPanel {
     private int ticks = 0;
     private long prevTime;
 
+    private int kBPerSec = 0;
+    private int highestKBPerSec = 0;    
+
     private byte[] imageData;
 
-    private Color getFpsColor(final int fps)
+    private Color getMeasurementColor(final int value, final int highestVal)
     {
       int red = 0;
       int green = 0;
       int blue = 0;
 
-      if(fps > highestFps)
-      {
-        highestFps = fps;
-      }
+      final int minVal = 120;
+      final int maxVal = 255;
       
-      float fpsPercentage = 0;
+      float percentage = 0;
 
-      if(highestFps > 0)
+      if(maxVal > 0)
       {
-        fpsPercentage = (float)fps / (float)highestFps;
+        percentage = (float)value / (float)highestVal;
       }
 
-      int totalPixelIntensity = 2 * 255;
+      //System.out.println("percentage: " + Float.toString(percentage));
 
-      green = 120 + (int)(((255 - 120) * fpsPercentage) + 0.5);
-      red = 120 + (int)(((255 - 120) * (1 - fpsPercentage)) + 0.5);
+      green = minVal + (int)(((maxVal - minVal) * percentage) + 0.5);
+      red = minVal + (int)(((maxVal - minVal) * (1 - percentage)) + 0.5);
 
-      System.out.println("green: " + Integer.toString(green));
-      System.out.println("red: " + Integer.toString(red));
-      System.out.println("fpsPercentage: " + Float.toString(fpsPercentage));
+      //System.out.println("RGB: " + Integer.toString(red) + " " + Integer.toString(green) + " " + Integer.toString(blue));
 
       return new Color(red, green, blue);
     }
@@ -146,6 +146,16 @@ class GuiDrawPanel extends JPanel {
     public Dimension getPreferredSize () 
     {
         return new Dimension (width, height + 50);
+    }
+
+    public void updateKBPerSec(final int kBPerSec)
+    {
+      this.kBPerSec = kBPerSec;
+
+      if(this.kBPerSec > highestKBPerSec)
+      {
+        highestKBPerSec = this.kBPerSec;
+      }
     }
 
     public void drawImage(byte[] imageData)
@@ -185,12 +195,22 @@ class GuiDrawPanel extends JPanel {
       if(timeElapsed > 1000)
       {
         fps = timeElapsed * ticks / timeElapsed;
+
+        if(fps > highestFps)
+        {
+          highestFps = fps;
+        }
+
         ticks = 0;
         prevTime = time;
       }
-      Color fpsColor = getFpsColor(fps);
+
+      Color fpsColor = getMeasurementColor(fps, highestFps);
       g.setColor(fpsColor);
       g.drawString("Current FPS: " + Integer.toString(fps), 10, 20);
+      Color kBPerSecColor = getMeasurementColor(kBPerSec, highestKBPerSec);
+      g.setColor(kBPerSecColor);
+      g.drawString("kB/s: " + Integer.toString(kBPerSec), 10, 35);
       ticks = ticks + 1;
 
       //System.out.println("timeElapsed: " + Long.toString(timeElapsed) + ", fps: " + Integer.toString(fps));

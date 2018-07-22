@@ -40,6 +40,7 @@ public class PiVisClient
     state = PiVisClient.PiVisClientState.INIT_SERVICE_DISCOVERY_SOCKET;
     serviceNo = service;
     active = true;
+    prevTime = System.currentTimeMillis();
   }
 
   private void sendAckMessage() throws IOException
@@ -159,11 +160,12 @@ public class PiVisClient
         numBytesReceived += numBytesToReceive;
         long time = System.currentTimeMillis();
         int timeElapsed = (int) (time - prevTime);
-        prevTime = time;
-        if(timeElapsed > 0)
+        if(timeElapsed > 1000)
         {
           int numBytes = (int)(numBytesReceived - prevNumBytesReceived);
+          prevNumBytesReceived = numBytesReceived;
           kBytesPerSec = (numBytes / timeElapsed);
+          prevTime = time;
         }
 
         sendAckMessage();
