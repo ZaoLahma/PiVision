@@ -33,7 +33,7 @@ public class PiVisGui implements ActionListener, PiVisClientDataReceiver
       }
     });   
 
-    JButton button = new JButton( "Change colors" );
+    JButton button = new JButton("Button that does nothing");
     button.addActionListener( this );
 
     frame.add(drawPanel, BorderLayout.CENTER);
@@ -59,7 +59,7 @@ public class PiVisGui implements ActionListener, PiVisClientDataReceiver
 
   public void actionPerformed(ActionEvent event) 
   {
-    drawPanel.setValues();
+    System.out.println("Button pressed!");
   }
 
   public void update(final byte[] data)
@@ -91,12 +91,6 @@ class GuiDrawPanel extends JPanel {
     private int width = 300;
     private int height = 300;
 
-    private int red;
-    private int green;
-    private int blue;
-
-    private Color randomColor;
-
     private byte[] imageData;
 
     GuiDrawPanel(final int width, final int height)
@@ -108,38 +102,21 @@ class GuiDrawPanel extends JPanel {
 
       for(int x = 0; x < imageData.length; ++x)
       {
-        imageData[x] = (byte)0xAB;
+        imageData[x] = (byte)0x0;
       }
     }
 
-    /*
-     * Make this one customary habbit,
-     * of overriding this method, when
-     * you extends a JPanel/JComponent,
-     * to define it's Preferred Size.
-     * Now in this case we want it to be 
-     * as big as the Image itself.
-     */
-    @Override
     public Dimension getPreferredSize () 
     {
         return new Dimension (width, height + 50);
     }
 
-    public void setValues () 
-    {
-      red = (int) (Math.random() * 255);
-      green = (int) (Math.random() * 255);
-      blue = (int) (Math.random() * 255);
-
-      randomColor = new Color(red, green, blue);
-
-      repaint();
-    }
-
     public void drawImage(byte[] imageData)
     {
-      this.imageData = imageData;
+      synchronized(this.imageData)
+      {
+        this.imageData = imageData;
+      }
 
       repaint();
     }
@@ -148,18 +125,22 @@ class GuiDrawPanel extends JPanel {
     {
       super.paintComponent(g);
 
-      for(int x = 0; x < width; ++x)
+      synchronized(imageData)
       {
-        for(int y = 0; y < height; ++y)
+        int x = 0;
+        int y = 0;
+        for(int byteIndex = 0; byteIndex < imageData.length; ++byteIndex)
         {
-          int colorIntensity = imageData[x*y] & 0xff;
-          //System.out.println("colorIntensity: " + Integer.toString(colorIntensity));
+          final int colorIntensity = Byte.toUnsignedInt(imageData[byteIndex]);
           g.setColor(new Color(colorIntensity, colorIntensity, colorIntensity));
           g.drawLine(x, y, x, y);
+          x += 1;
+          if(x == width)
+          {
+            x = 0;
+            y += 1;
+          }
         }
-      }
-
-      g.setColor(randomColor);
-      g.fillOval(70, 70, 100, 100);        
+      }    
     }
 }

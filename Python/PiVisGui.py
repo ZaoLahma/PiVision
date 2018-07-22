@@ -31,6 +31,8 @@ class PiVisGui():
 
         guiScheduler.registerRunnable(self.run)
 
+        self.printed = False
+
     def showGrayScaleImage(self, image):
         x = 0
         y = 0
@@ -38,13 +40,16 @@ class PiVisGui():
         now = time.time()
         ar = pygame.PixelArray(self.surface)
         for byte in image:
-            #print("Byte: " + hex(byte))
+            if False == self.printed:
+                print("Byte: " + str(byte))
             ar[x, y] = (byte, byte, byte)
             x += 1
             if x == self.resolution[0]:
                 y += 1
                 x = 0
         del ar
+
+        self.printed = True
 
         screen = pygame.display.get_surface()
         screen.blit (self.surface, (0, 0))
