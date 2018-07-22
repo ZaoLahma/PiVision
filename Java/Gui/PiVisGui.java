@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import pivision.java.gui.PiVisClient;
+import pivision.java.gui.PiVisClient.PiVisClientState;
 import pivision.java.gui.PiVisClientDataReceiver;
 
 public class PiVisGui implements ActionListener, PiVisClientDataReceiver
@@ -67,6 +68,11 @@ public class PiVisGui implements ActionListener, PiVisClientDataReceiver
     drawPanel.drawImage(data);
     drawPanel.updateKBPerSec(client.getKBytesPerSec());
   }
+
+  public void updateState(final PiVisClientState state)
+  {
+    drawPanel.updateState(state);
+  }
 }
 
 class Main
@@ -101,6 +107,9 @@ class GuiDrawPanel extends JPanel {
     private int highestKBPerSec = 0;    
 
     private byte[] imageData;
+
+    private String stateString = "";
+    private Color stateColor = new Color(255, 0, 0);
 
     private Color getMeasurementColor(final int value, final int highestVal)
     {
@@ -158,6 +167,36 @@ class GuiDrawPanel extends JPanel {
       }
     }
 
+    public void updateState(final PiVisClientState state)
+    {
+      synchronized(stateString)
+      {
+        switch(state)
+        {     
+          case INIT_SERVICE_DISCOVERY_SOCKET:
+            stateString = "INIT";
+            stateColor = new Color(255, 0, 0);
+            break;
+          case FIND_SERVICE:
+            stateString = "FIND_SERVICE";
+            stateColor = new Color(255, 0, 0);        
+            break;
+          case CONNECT_SERVICE:
+            stateString = "CONNECT_SERVICE";
+            stateColor = new Color(255, 255, 0);        
+            break;
+          case CONNECTED:
+            stateString = "CONNECTED";
+            stateColor = new Color(0, 255, 0);        
+            break;
+          default:
+            break;
+        }
+      }
+
+      repaint();
+    }
+
     public void drawImage(byte[] imageData)
     {
       synchronized(this.imageData)
@@ -205,12 +244,18 @@ class GuiDrawPanel extends JPanel {
         prevTime = time;
       }
 
+      synchronized(stateString)
+      {
+        g.setColor(stateColor);
+        g.drawString("Client state: " + stateString, 10, 20);
+      }
+
       Color fpsColor = getMeasurementColor(fps, highestFps);
       g.setColor(fpsColor);
-      g.drawString("Current FPS: " + Integer.toString(fps), 10, 20);
+      g.drawString("Current FPS: " + Integer.toString(fps), 10, 35);
       Color kBPerSecColor = getMeasurementColor(kBPerSec, highestKBPerSec);
       g.setColor(kBPerSecColor);
-      g.drawString("kB/s: " + Integer.toString(kBPerSec), 10, 35);
+      g.drawString("kB/s: " + Integer.toString(kBPerSec), 10, 50);
       ticks = ticks + 1;
 
       //System.out.println("timeElapsed: " + Long.toString(timeElapsed) + ", fps: " + Integer.toString(fps));

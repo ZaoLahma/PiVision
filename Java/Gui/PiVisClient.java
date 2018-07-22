@@ -14,7 +14,7 @@ import pivision.java.gui.PiVisClientDataReceiver;
 
 public class PiVisClient
 {
-  private enum PiVisClientState
+  public enum PiVisClientState
   {
     INIT_SERVICE_DISCOVERY_SOCKET,
     FIND_SERVICE,
@@ -54,6 +54,9 @@ public class PiVisClient
 
   private void initServiceDiscoverySocket()
   {
+    prevNumBytesReceived = 0;
+    numBytesReceived = 0;
+    prevTime = System.currentTimeMillis();
     try
     {
       System.out.println("initServiceDiscoverySocket");
@@ -250,5 +253,7 @@ public class PiVisClient
       default:
         break;
     }
+
+    dataReceiver.updateState(state);
   }
 }
