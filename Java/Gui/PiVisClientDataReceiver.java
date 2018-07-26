@@ -1,6 +1,6 @@
-package pivision.java.gui;
+package gui;
 
-import pivision.java.gui.PiVisClient.PiVisClientState;
+import gui.PiVisClient.PiVisClientState;
 
 public abstract interface PiVisClientDataReceiver
 {

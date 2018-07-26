@@ -1,4 +1,4 @@
-package pivision.java.gui;
+package gui;
 import java.net.MulticastSocket;
 import java.net.Socket;
 import java.net.InetAddress;
@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.EOFException;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import pivision.java.gui.PiVisClientDataReceiver;
+import gui.PiVisClientDataReceiver;
 
 public class PiVisClient
 {

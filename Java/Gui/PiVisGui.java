@@ -1,11 +1,11 @@
-package pivision.java.gui;
+package gui;
 
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import pivision.java.gui.PiVisClient;
-import pivision.java.gui.PiVisClient.PiVisClientState;
-import pivision.java.gui.PiVisClientDataReceiver;
+import gui.PiVisClient;
+import gui.PiVisClient.PiVisClientState;
+import gui.PiVisClientDataReceiver;
 
 public class PiVisGui implements ActionListener, PiVisClientDataReceiver
 {

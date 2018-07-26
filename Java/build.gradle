@@ -1,0 +1,17 @@
+apply plugin: 'java'
+
+sourceSets {
+   main {
+      java {
+         srcDir 'Gui'
+      }
+   }
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'gui.Main'
+        )
+    }
+}
